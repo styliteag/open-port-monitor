@@ -104,8 +104,7 @@ async def get_service_history(
     """Get service scan history for a specific host and port."""
     # Count total
     count_query = select(func.count()).where(
-        ServiceScanResult.host_ip == host_ip,
-        ServiceScanResult.port == port,
+        (ServiceScanResult.host_ip == host_ip) & (ServiceScanResult.port == port)
     )
     total_result = await db.execute(count_query)
     total = total_result.scalar() or 0
@@ -120,8 +119,7 @@ async def get_service_history(
         .join(Scan, ServiceScanResult.scan_id == Scan.id)
         .join(Network, Scan.network_id == Network.id)
         .where(
-            ServiceScanResult.host_ip == host_ip,
-            ServiceScanResult.port == port,
+            (ServiceScanResult.host_ip == host_ip) & (ServiceScanResult.port == port)
         )
         .order_by(ServiceScanResult.timestamp.desc())
         .offset(offset)
