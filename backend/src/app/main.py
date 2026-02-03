@@ -25,6 +25,7 @@ from .routers import (
     trends,
     users,
     version,
+    vulnerabilities,
 )
 from .services.scheduler import shutdown_scheduler, start_scheduler
 
@@ -87,6 +88,7 @@ app.include_router(ssh.router)
 app.include_router(trends.router)
 app.include_router(users.router)
 app.include_router(version.router)
+app.include_router(vulnerabilities.router)
 
 
 @app.get("/health")

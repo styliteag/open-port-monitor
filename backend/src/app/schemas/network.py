@@ -95,7 +95,7 @@ def validate_cron_schedule(value: str | None) -> str | None:
     return value
 
 
-VALID_SCANNER_TYPES = ("masscan", "nmap")
+VALID_SCANNER_TYPES = ("masscan", "nmap", "greenbone")
 VALID_SCAN_PROTOCOLS = ("tcp", "udp", "both")
 
 

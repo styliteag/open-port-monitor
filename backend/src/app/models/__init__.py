@@ -16,6 +16,7 @@ from app.models.scan_log import ScanLog
 from app.models.scanner import Scanner
 from app.models.ssh_scan_result import SSHScanResult
 from app.models.user import User
+from app.models.vulnerability import Vulnerability
 
 __all__ = [
     "Base",
@@ -34,4 +35,5 @@ __all__ = [
     "GlobalSetting",
     "Host",
     "HostDiscoveryScan",
+    "Vulnerability",
 ]
