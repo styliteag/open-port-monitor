@@ -1016,21 +1016,27 @@ const RiskOverview = () => {
                                                     </td>
                                                     {/* Status column */}
                                                     <td className="whitespace-nowrap px-4 py-3" onClick={(e) => e.stopPropagation()}>
-                                                        <div className="relative">
-                                                            <button
-                                                                onClick={() => setStatusDropdownOpen(statusDropdownOpen === alert.id ? null : alert.id)}
-                                                                disabled={updatingStatus === alert.id}
-                                                                className={`flex items-center gap-2 rounded-xl border px-3 py-1.5 text-xs font-semibold shadow-sm transition ${resolutionStatusStyles[alert.resolution_status]} disabled:opacity-50`}
-                                                            >
-                                                                {updatingStatus === alert.id ? (
-                                                                    <span className="animate-pulse">Updating...</span>
-                                                                ) : (
-                                                                    resolutionStatusLabels[alert.resolution_status]
-                                                                )}
-                                                                <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                                                </svg>
-                                                            </button>
+                                                        <div className="relative flex items-center gap-2">
+                                                            {updatingStatus === alert.id ? (
+                                                                <span className="text-xs text-slate-500 animate-pulse">Updating...</span>
+                                                            ) : (
+                                                                <>
+                                                                    {/* Status Badge (read-only) */}
+                                                                    <span className={`inline-flex items-center rounded-xl border px-3 py-1.5 text-xs font-semibold ${resolutionStatusStyles[alert.resolution_status]}`}>
+                                                                        {resolutionStatusLabels[alert.resolution_status]}
+                                                                    </span>
+                                                                    {/* Edit Button */}
+                                                                    <button
+                                                                        onClick={() => setStatusDropdownOpen(statusDropdownOpen === alert.id ? null : alert.id)}
+                                                                        className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-slate-200/70 bg-white text-slate-600 shadow-sm transition hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700"
+                                                                        title="Change status"
+                                                                    >
+                                                                        <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                                                        </svg>
+                                                                    </button>
+                                                                </>
+                                                            )}
                                                             {statusDropdownOpen === alert.id && (
                                                                 <div className="absolute left-0 top-full z-30 mt-1 w-36 rounded-xl border border-slate-200/70 bg-white shadow-lg dark:border-slate-700 dark:bg-slate-800">
                                                                     {(['open', 'in_progress', 'resolved'] as ResolutionStatus[]).map((status) => (

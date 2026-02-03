@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Improved Risk Overview status UI: Status is now displayed as a read-only badge with a separate edit button, making it clearer that the status is editable
+
+### Fixed
+- Fixed frontend Dockerfile to use correct bun lock file name (bun.lock instead of bun.lockb)
+
 ## [1.1.15] - 2026-02-03
 
 ## [1.1.14] - 2026-02-03
