@@ -85,6 +85,24 @@ services:
       - NET_RAW
       - NET_ADMIN
 
+  bbot-scanner:
+    build:
+      context: ./bbot-scanner
+      dockerfile: Dockerfile.dev
+    container_name: opm-bbot-scanner
+    environment:
+      BACKEND_URL: ${BBOT_BACKEND_URL:-http://backend:8000}
+      API_KEY: ${BBOT_API_KEY:-}
+      POLL_INTERVAL: ${BBOT_POLL_INTERVAL:-60}
+      LOG_LEVEL: ${BBOT_LOG_LEVEL:-INFO}
+    volumes:
+      - ./bbot-scanner/src:/app/src
+      - ./VERSION:/app/VERSION:ro
+    networks:
+      - opm-network
+    depends_on:
+      - backend
+
 networks:
   opm-network:
     name: opm-network
