@@ -3,6 +3,8 @@
 from app.models.alert import Alert
 from app.models.alert_comment import AlertComment
 from app.models.base import Base
+from app.models.bbot_finding import BbotFinding
+from app.models.bbot_scan import BbotScan
 from app.models.global_open_port import GlobalOpenPort
 from app.models.global_port_rule import GlobalPortRule
 from app.models.global_setting import GlobalSetting
@@ -34,4 +36,6 @@ __all__ = [
     "GlobalSetting",
     "Host",
     "HostDiscoveryScan",
+    "BbotScan",
+    "BbotFinding",
 ]

@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Bbot security scanner integration for OSINT and advanced security scanning
+  - New `BbotScan` and `BbotFinding` database models
+  - Separate bbot-scanner Docker service for running bbot scans
+  - Backend API endpoints for managing bbot scans and findings
+  - "Security Scan" UI tab with scan list and detailed findings view
+  - Ability to trigger bbot scans for specific targets with custom modules
+  - Scanner-side API for claiming bbot jobs and submitting results
+
 ## [1.1.15] - 2026-02-03
 
 ## [1.1.14] - 2026-02-03

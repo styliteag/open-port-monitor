@@ -21,6 +21,8 @@ import RiskOverview from './pages/RiskOverview.tsx'
 import Hosts from './pages/Hosts.tsx'
 import Trends from './pages/Trends.tsx'
 import SSHSecurity from './pages/SSHSecurity.tsx'
+import BbotScans from './pages/BbotScans.tsx'
+import BbotScanDetail from './pages/BbotScanDetail.tsx'
 import './index.css'
 
 const queryClient = new QueryClient()
@@ -92,6 +94,14 @@ const router = createBrowserRouter([
       {
         path: 'ssh-security',
         element: <SSHSecurity />,
+      },
+      {
+        path: 'bbot-scans',
+        element: <BbotScans />,
+      },
+      {
+        path: 'bbot-scans/:scanId',
+        element: <BbotScanDetail />,
       },
     ],
   },

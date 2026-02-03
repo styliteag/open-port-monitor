@@ -10,6 +10,11 @@ Distributed network port scanning and monitoring system for security purposes wi
   - Weak cipher and key exchange algorithm detection
   - SSH version tracking with outdated version alerts
   - Configuration regression detection between scans
+- **Bbot Security Scanner**: Advanced OSINT and security scanning with bbot integration
+  - Subdomain enumeration and discovery
+  - Vulnerability scanning
+  - Service fingerprinting
+  - Customizable module support
 - **Multi-Site Scanning**: Deploy scanner agents at different locations
 - **Alerting**: Configurable alerts for new ports, policy violations, and SSH security issues
 - **Compliance Reports**: Export PDF and CSV reports for SSH security compliance
@@ -49,12 +54,13 @@ Distributed network port scanning and monitoring system for security purposes wi
 
 ### Services
 
-| Service  | Port | Description                          |
-|----------|------|--------------------------------------|
-| frontend | 5173 | React + Vite web dashboard           |
-| backend  | 8000 | FastAPI REST API                     |
-| db       | 3306 | MariaDB database                     |
-| scanner  | -    | Masscan-based network scanner agent  |
+| Service       | Port | Description                          |
+|---------------|------|--------------------------------------|
+| frontend      | 5173 | React + Vite web dashboard           |
+| backend       | 8000 | FastAPI REST API                     |
+| db            | 3306 | MariaDB database                     |
+| scanner       | -    | Masscan-based network scanner agent  |
+| bbot-scanner  | -    | Bbot security scanner agent          |
 
 ### Development
 
