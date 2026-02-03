@@ -165,7 +165,25 @@ class ScannerResultRequest(BaseModel):
     status: str  # "success" or "failed"
     open_ports: list[OpenPortData] = []
     ssh_results: list[SSHProbeResultData] = []
+    vulnerabilities: list["VulnerabilityData"] = []
     error_message: str | None = None
+
+
+class VulnerabilityData(BaseModel):
+    """Vulnerability data from Greenbone scanner."""
+
+    host_ip: str
+    port: int | None = None
+    protocol: str | None = None
+    nvt_oid: str
+    name: str
+    severity: float
+    threat: str
+    cve: str | None = None
+    description: str | None = None
+    solution: str | None = None
+    solution_type: str | None = None
+    references: str | None = None
 
 
 class ScannerResultResponse(BaseModel):

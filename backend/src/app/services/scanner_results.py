@@ -10,6 +10,7 @@ from app.models.open_port import OpenPort
 from app.models.scan import Scan, ScanStatus
 from app.models.scanner import Scanner
 from app.models.ssh_scan_result import SSHScanResult
+from app.models.vulnerability import Vulnerability
 from app.schemas.scanner import ScannerResultRequest, ScannerResultResponse
 from app.services.alerts import (
     generate_global_alerts_for_scan,
@@ -185,6 +186,27 @@ async def submit_scan_results(
         )
         db.add(ssh_result)
         ssh_results_recorded += 1
+
+    # Process vulnerabilities from Greenbone scanner
+    vulnerabilities_recorded = 0
+    for vuln_data in request.vulnerabilities:
+        vulnerability = Vulnerability(
+            scan_id=scan.id,
+            host_ip=vuln_data.host_ip,
+            port=vuln_data.port,
+            protocol=vuln_data.protocol,
+            nvt_oid=vuln_data.nvt_oid,
+            name=vuln_data.name,
+            severity=vuln_data.severity,
+            threat=vuln_data.threat,
+            cve=vuln_data.cve,
+            description=vuln_data.description,
+            solution=vuln_data.solution,
+            solution_type=vuln_data.solution_type,
+            references=vuln_data.references,
+        )
+        db.add(vulnerability)
+        vulnerabilities_recorded += 1
 
     if scan.status == ScanStatus.COMPLETED:
         await generate_global_alerts_for_scan(db, scan, recorded_ports_data)

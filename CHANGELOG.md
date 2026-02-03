@@ -7,6 +7,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Greenbone (OpenVAS) vulnerability scanner integration
+  - Added 'greenbone' as a new scanner type option for networks
+  - New `vulnerabilities` table to store vulnerability scan results with fields:
+    - NVT OID, severity (CVSS score), threat level, CVE references
+    - Host IP, port, protocol information
+    - Vulnerability name, description, solution, and references
+  - Database migration (007) to create vulnerabilities table with proper indexes
+  - Greenbone scanner module (`scanner/src/scanners/greenbone.py`) that:
+    - Performs vulnerability scanning after port discovery
+    - Generates sample vulnerability data for demonstration
+    - Supports vulnerability classification (Critical/High/Medium/Low)
+  - API endpoint `/api/scans/{scan_id}/vulnerabilities` to retrieve vulnerability data
+  - Scanner orchestration automatically runs Greenbone scans for networks with greenbone type
+  - Backend service to process and store vulnerability results
+  - Vulnerabilities tab in scan detail page showing:
+    - Summary statistics with color-coded severity cards (critical, high, medium, low)
+    - Detailed vulnerability list with severity badges, CVE references
+    - Solution recommendations and reference links
+    - Host IP and port information for each vulnerability
+  - TypeScript types for Vulnerability and VulnerabilitySummary
+  - Vulnerability data submission via scanner API results endpoint
+
+### Changed
+- Scanner type validation now accepts 'greenbone' in addition to 'masscan' and 'nmap'
+- Scan model extended with `vulnerabilities` relationship
+- Scanner result submission schema includes optional vulnerabilities array
+- Frontend ScanDetail type includes optional vulnerability_summary field
+
+### Technical Implementation Notes
+- Greenbone scanner uses masscan for fast port discovery, then performs vulnerability analysis
+- Current implementation uses simulated vulnerability data for demonstration purposes
+- For production use, integrate with actual Greenbone/OpenVAS deployment via GVM API
+- Vulnerabilities are linked to scans and automatically deleted when scan is deleted (cascade)
+
 ## [1.1.15] - 2026-02-03
 
 ## [1.1.14] - 2026-02-03

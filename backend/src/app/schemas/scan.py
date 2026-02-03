@@ -5,6 +5,8 @@ from typing import Any
 
 from pydantic import BaseModel
 
+from app.schemas.vulnerability import VulnerabilitySummary
+
 
 class SSHScanResultSummary(BaseModel):
     """SSH scan result summary for inclusion in scan detail response."""
@@ -82,6 +84,7 @@ class ScanResponse(BaseModel):
     progress_percent: float | None = None
     progress_message: str | None = None
     target_ip: str | None = None
+    vulnerability_summary: VulnerabilitySummary | None = None
 
     model_config = {"from_attributes": True}
 
