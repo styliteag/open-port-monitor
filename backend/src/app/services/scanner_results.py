@@ -9,6 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.open_port import OpenPort
 from app.models.scan import Scan, ScanStatus
 from app.models.scanner import Scanner
+from app.models.service_scan_result import ServiceScanResult
 from app.models.ssh_scan_result import SSHScanResult
 from app.schemas.scanner import ScannerResultRequest, ScannerResultResponse
 from app.services.alerts import (
@@ -185,6 +186,26 @@ async def submit_scan_results(
         )
         db.add(ssh_result)
         ssh_results_recorded += 1
+
+    # Process service scan results (HTTP/NSE scripts)
+    service_results_recorded = 0
+    for service_data in request.service_results:
+        service_result = ServiceScanResult(
+            scan_id=scan.id,
+            host_ip=service_data.get("host_ip", ""),
+            port=service_data.get("port", 0),
+            protocol=service_data.get("protocol", "tcp"),
+            service_name=service_data.get("service_name"),
+            timestamp=now,
+            http_title=service_data.get("http_title"),
+            http_status=service_data.get("http_status"),
+            http_server=service_data.get("http_server"),
+            http_methods=service_data.get("http_methods"),
+            http_headers=service_data.get("http_headers"),
+            nse_scripts=service_data.get("nse_scripts"),
+        )
+        db.add(service_result)
+        service_results_recorded += 1
 
     if scan.status == ScanStatus.COMPLETED:
         await generate_global_alerts_for_scan(db, scan, recorded_ports_data)

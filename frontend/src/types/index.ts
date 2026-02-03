@@ -508,3 +508,65 @@ export type SSHHostHistoryResponse = {
   history: SSHHostHistoryEntry[]
   total: number
 }
+
+// Service scan types
+export type ServiceScanResult = {
+  id: number
+  scan_id: number
+  host_ip: string
+  port: number
+  protocol: string
+  service_name: string | null
+  timestamp: string
+  http_title: string | null
+  http_status: number | null
+  http_server: string | null
+  http_methods: string[] | null
+  http_headers: Record<string, unknown> | null
+  nse_scripts: Record<string, unknown> | null
+}
+
+export type ServiceScanResultListResponse = {
+  service_results: ServiceScanResult[]
+}
+
+export type ServiceHostSummary = {
+  host_ip: string
+  port: number
+  protocol: string
+  service_name: string | null
+  http_title: string | null
+  http_status: number | null
+  http_server: string | null
+  last_scan_id: number
+  last_scanned: string
+  network_id: number | null
+  network_name: string | null
+}
+
+export type ServiceHostListResponse = {
+  services: ServiceHostSummary[]
+  total: number
+}
+
+export type ServiceHistoryEntry = {
+  scan_id: number
+  timestamp: string
+  service_name: string | null
+  http_title: string | null
+  http_status: number | null
+  http_server: string | null
+  http_methods: string[] | null
+  nse_scripts: Record<string, unknown> | null
+  network_id: number | null
+  network_name: string | null
+}
+
+export type ServiceHistoryResponse = {
+  host_ip: string
+  port: number
+  protocol: string
+  history: ServiceHistoryEntry[]
+  total: number
+}
+

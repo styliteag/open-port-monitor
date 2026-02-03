@@ -15,7 +15,7 @@ from src.discovery import (
 )
 from src.models import HostDiscoveryJob, ScannerJob, ScanRunResult
 from src.scanners.masscan import run_masscan
-from src.scanners.nmap import run_nmap, run_nmap_service_detection
+from src.scanners.nmap import run_nmap, run_nmap_service_detection, run_nmap_service_scripts
 from src.ssh_probe import SSHProbeResult
 from src.threading_utils import LogBufferHandler, LogStreamer, ProgressReporter
 from src.utils import check_ipv6_connectivity
@@ -219,6 +219,22 @@ def process_job(
                     weak_ciphers,
                 )
 
+        # HTTP/Service NSE script phase - runs after SSH probing
+        service_results: list[dict] = []
+        if result.open_ports and not result.cancelled:
+            logger.info("=== HTTP/Service NSE Script Phase ===")
+            service_results = run_nmap_service_scripts(
+                client,
+                scan_id,
+                result.open_ports,
+                logger,
+            )
+            if service_results:
+                logger.info(
+                    "NSE script scanning found detailed info for %d services",
+                    len(service_results),
+                )
+
         if result.cancelled:
             try:
                 client.submit_results(
@@ -226,6 +242,7 @@ def process_job(
                     "failed",
                     result.open_ports,
                     ssh_results=ssh_results,
+                    service_results=service_results,
                     error_message="Scan cancelled by user request",
                 )
                 logger.info("Submitted cancelled scan results for scan %s", scan_id)
@@ -236,7 +253,9 @@ def process_job(
         # Report 100% at completion
         progress_reporter.update(100, "Scan complete")
 
-        client.submit_results(scan_id, "success", result.open_ports, ssh_results=ssh_results)
+        client.submit_results(
+            scan_id, "success", result.open_ports, ssh_results=ssh_results, service_results=service_results
+        )
         logger.info("Submitted scan results for scan %s", scan_id)
     except Exception as exc:
         logger.exception("Scan failed for network %s", job.network_id)

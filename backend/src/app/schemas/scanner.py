@@ -165,6 +165,7 @@ class ScannerResultRequest(BaseModel):
     status: str  # "success" or "failed"
     open_ports: list[OpenPortData] = []
     ssh_results: list[SSHProbeResultData] = []
+    service_results: list[dict] = []  # NSE script results for HTTP and services
     error_message: str | None = None
 
 
