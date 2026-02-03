@@ -12,6 +12,7 @@ from .core.version import get_version
 from .routers import (
     alerts,
     auth,
+    bbot,
     global_ports,
     global_settings,
     hosts,
@@ -74,6 +75,7 @@ app.add_middleware(
 # Register routers
 app.include_router(auth.router)
 app.include_router(alerts.router)
+app.include_router(bbot.router)
 app.include_router(global_ports.router)
 app.include_router(global_settings.router)
 app.include_router(hosts.router)

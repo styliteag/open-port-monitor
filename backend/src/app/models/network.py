@@ -11,6 +11,7 @@ from app.models.base import Base
 
 if TYPE_CHECKING:
     from app.models.alert import Alert
+    from app.models.bbot_scan import BbotScan
     from app.models.host_discovery_scan import HostDiscoveryScan
     from app.models.port_rule import PortRule
     from app.models.scan import Scan
@@ -65,6 +66,9 @@ class Network(Base):
     )
     host_discovery_scans: Mapped[list["HostDiscoveryScan"]] = relationship(
         "HostDiscoveryScan", back_populates="network", cascade="all, delete-orphan"
+    )
+    bbot_scans: Mapped[list["BbotScan"]] = relationship(
+        "BbotScan", back_populates="network", cascade="all, delete-orphan"
     )
 
     @property

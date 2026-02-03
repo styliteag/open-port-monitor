@@ -297,3 +297,52 @@ class HostDiscoveryResultResponse(BaseModel):
     status: str
     hosts_recorded: int
     message: str = "Host discovery results submitted successfully"
+
+
+# --- Bbot Scanner Schemas ---
+
+
+class BbotJobResponse(BaseModel):
+    """A pending bbot scan job for the scanner."""
+
+    scan_id: int
+    network_id: int
+    target: str
+    modules: str | None = None
+
+    model_config = {"from_attributes": True}
+
+
+class BbotJobListResponse(BaseModel):
+    """List of pending bbot scan jobs."""
+
+    jobs: list[BbotJobResponse]
+
+
+class BbotJobClaimResponse(BaseModel):
+    """Response when successfully claiming a bbot scan job."""
+
+    scan_id: int
+    network_id: int
+    target: str
+    modules: str | None = None
+    message: str = "Bbot job claimed successfully"
+
+
+class BbotResultRequest(BaseModel):
+    """Request to submit bbot scan results."""
+
+    scan_id: int
+    status: str  # "success" or "failed"
+    findings: list[dict] = []  # Raw bbot event dictionaries
+    error_message: str | None = None
+
+
+class BbotResultResponse(BaseModel):
+    """Response after submitting bbot scan results."""
+
+    scan_id: int
+    status: str
+    findings_recorded: int
+    message: str = "Bbot results submitted successfully"
+

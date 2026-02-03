@@ -9,6 +9,10 @@ from fastapi import APIRouter, Header, HTTPException, Request, status
 
 from app.core.deps import CurrentScanner, DbSession
 from app.schemas.scanner import (
+    BbotJobClaimResponse,
+    BbotJobListResponse,
+    BbotResultRequest,
+    BbotResultResponse,
     HostDiscoveryJobClaimResponse,
     HostDiscoveryJobListResponse,
     HostDiscoveryJobResponse,
@@ -442,3 +446,99 @@ async def submit_host_discovery_results(
         status="success",
         hosts_recorded=hosts_recorded,
     )
+
+
+# --- Bbot Scanner Endpoints ---
+
+
+@router.get("/bbot-jobs", response_model=BbotJobListResponse)
+async def get_bbot_jobs(
+    db: DbSession,
+    scanner: CurrentScanner,
+) -> BbotJobListResponse:
+    """
+    Get pending bbot scan jobs for this scanner.
+
+    Returns bbot scans with status 'planned' for networks assigned to this scanner.
+
+    Requires valid scanner JWT token.
+    """
+    from app.services.bbot_scanner_jobs import get_pending_bbot_jobs_for_scanner
+    from app.schemas.scanner import BbotJobListResponse
+
+    jobs = await get_pending_bbot_jobs_for_scanner(db, scanner)
+    return BbotJobListResponse(jobs=jobs)
+
+
+@router.post("/bbot-jobs/{network_id}/claim", response_model=BbotJobClaimResponse)
+async def claim_bbot_job(
+    network_id: int,
+    db: DbSession,
+    scanner: CurrentScanner,
+) -> BbotJobClaimResponse:
+    """
+    Claim a bbot scan job for a network.
+
+    Marks the job as in-progress and updates the scan record.
+
+    Returns 404 if network doesn't exist or isn't assigned to this scanner.
+    Returns 409 Conflict if job is already claimed/running.
+
+    Requires valid scanner JWT token.
+    """
+    from app.services.bbot_scanner_jobs import claim_bbot_job as claim_job_service
+    from app.services.bbot_scanner_jobs import is_bbot_job_running
+    from app.schemas.scanner import BbotJobClaimResponse
+
+    # Check if there's already a running bbot scan
+    if await is_bbot_job_running(db, network_id):
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Bbot job already claimed or running",
+        )
+
+    result = await claim_job_service(db, scanner, network_id)
+
+    if result is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No pending bbot job found for this network or network not assigned to this scanner",
+        )
+
+    await db.commit()
+    return result
+
+
+@router.post("/bbot-results", response_model=BbotResultResponse)
+async def submit_bbot_results(
+    request: BbotResultRequest,
+    db: DbSession,
+    scanner: CurrentScanner,
+) -> BbotResultResponse:
+    """
+    Submit bbot scan results from a scanner.
+
+    Accepts scan_id, status (success/failed), findings list, and optional error_message.
+
+    Updates scan record with status and completed_at timestamp.
+    Creates bbot_findings records from the results.
+
+    Returns 404 if scan doesn't exist or is not assigned to this scanner.
+    Returns 400 if scan is not in RUNNING or CANCELLED status.
+
+    Requires valid scanner JWT token.
+    """
+    from app.services.bbot_scanner_results import submit_bbot_results as submit_results_service
+    from app.schemas.scanner import BbotResultRequest, BbotResultResponse
+
+    result = await submit_results_service(db, scanner, request)
+
+    if result is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Bbot scan not found, not assigned to this scanner, or not in running status",
+        )
+
+    await db.commit()
+    return result
+
