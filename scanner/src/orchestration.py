@@ -14,6 +14,7 @@ from src.discovery import (
     run_ssh_probes,
 )
 from src.models import HostDiscoveryJob, ScannerJob, ScanRunResult
+from src.scanners.greenbone import run_greenbone_scan
 from src.scanners.masscan import run_masscan
 from src.scanners.nmap import run_nmap, run_nmap_service_detection
 from src.ssh_probe import SSHProbeResult
@@ -134,6 +135,22 @@ def process_job(
             )
             logger.info("Nmap single-host scan completed with %s open ports", len(result.open_ports))
         # Dispatch to appropriate scanner based on scanner_type for full network scans
+        elif job.scanner_type == "greenbone":
+            # Greenbone scanner: first do port discovery, then vulnerability scanning
+            # Use masscan for fast port discovery
+            result = run_masscan(
+                client,
+                scan_id,
+                job.cidr,
+                job.port_spec,
+                job.rate,
+                job.scan_timeout,
+                job.port_timeout,
+                job.scan_protocol,
+                logger,
+                progress_reporter,
+            )
+            logger.info("Port discovery completed with %s open ports", len(result.open_ports))
         elif job.scanner_type == "nmap":
             result = run_nmap(
                 client,
@@ -219,6 +236,27 @@ def process_job(
                     weak_ciphers,
                 )
 
+        # Greenbone vulnerability scanning phase - runs after port scanning for greenbone scanner type
+        vulnerabilities: list = []
+        if job.scanner_type == "greenbone" and result.open_ports and not result.cancelled:
+            logger.info("=== Greenbone Vulnerability Scanning Phase ===")
+            progress_reporter.update(85, "Starting vulnerability scan...")
+
+            # Run Greenbone vulnerability scan
+            from src.scanners.greenbone import GreenboneVulnerability
+
+            greenbone_vulns = run_greenbone_scan(
+                client,
+                scan_id,
+                result.open_ports,
+                logger,
+                progress_reporter,
+            )
+
+            # Convert to payload format
+            vulnerabilities = [v.to_payload() for v in greenbone_vulns]
+            logger.info("Vulnerability scanning complete: found %d vulnerabilities", len(vulnerabilities))
+
         if result.cancelled:
             try:
                 client.submit_results(
@@ -226,6 +264,7 @@ def process_job(
                     "failed",
                     result.open_ports,
                     ssh_results=ssh_results,
+                    vulnerabilities=vulnerabilities,
                     error_message="Scan cancelled by user request",
                 )
                 logger.info("Submitted cancelled scan results for scan %s", scan_id)
@@ -236,7 +275,13 @@ def process_job(
         # Report 100% at completion
         progress_reporter.update(100, "Scan complete")
 
-        client.submit_results(scan_id, "success", result.open_ports, ssh_results=ssh_results)
+        client.submit_results(
+            scan_id,
+            "success",
+            result.open_ports,
+            ssh_results=ssh_results,
+            vulnerabilities=vulnerabilities,
+        )
         logger.info("Submitted scan results for scan %s", scan_id)
     except Exception as exc:
         logger.exception("Scan failed for network %s", job.network_id)

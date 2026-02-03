@@ -175,6 +175,7 @@ class ScannerClient:
         status: str,
         open_ports: list[OpenPortResult],
         ssh_results: list[SSHProbeResult] | None = None,
+        vulnerabilities: list[dict[str, Any]] | None = None,
         error_message: str | None = None,
     ) -> None:
         """Submit scan results to the backend.
@@ -184,6 +185,7 @@ class ScannerClient:
             status: Scan status (success, failed, etc.)
             open_ports: List of discovered open ports
             ssh_results: Optional list of SSH probe results
+            vulnerabilities: Optional list of vulnerabilities (for Greenbone scans)
             error_message: Optional error message
         """
         payload: dict[str, Any] = {
@@ -194,6 +196,8 @@ class ScannerClient:
         }
         if ssh_results:
             payload["ssh_results"] = [result.to_dict() for result in ssh_results]
+        if vulnerabilities:
+            payload["vulnerabilities"] = vulnerabilities
         response = self._request("POST", "/api/scanner/results", json=payload, auth_required=True)
         response.raise_for_status()
 
