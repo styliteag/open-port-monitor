@@ -5,6 +5,7 @@ Distributed network port scanning and monitoring system for security purposes wi
 ## Features
 
 - **Port Scanning**: Masscan-based high-speed port scanning with service detection
+- **Vulnerability Scanning**: Greenbone (OpenVAS) integration for comprehensive vulnerability assessments
 - **SSH Security Analysis**: Automatic SSH server security auditing including:
   - Authentication method detection (publickey, password, keyboard-interactive)
   - Weak cipher and key exchange algorithm detection
@@ -211,6 +212,39 @@ docker run -d \
 The scanner will automatically connect to your main server and start processing scan jobs.
 
 **Note:** The scanner requires `NET_RAW` and `NET_ADMIN` capabilities to perform network scans. These are automatically configured in the compose file.
+
+## Scanner Types
+
+Open Port Monitor supports multiple scanner types for different scanning needs:
+
+### Masscan (Default)
+- **Fast port discovery** using masscan for high-speed network scanning
+- **Service detection** via nmap on discovered ports
+- Best for large networks requiring quick port enumeration
+- Hybrid approach: masscan speed + nmap accuracy
+
+### Nmap
+- **Comprehensive scanning** using nmap for both port discovery and service detection
+- More accurate service fingerprinting
+- Better for smaller networks or when detailed service information is critical
+
+### Greenbone (OpenVAS)
+- **Vulnerability scanning** for security assessments
+- Performs port discovery first, then vulnerability analysis
+- Provides detailed vulnerability reports with:
+  - CVE references
+  - CVSS severity scores
+  - Threat levels (Critical, High, Medium, Low)
+  - Solution recommendations
+- Results appear in dedicated "Vulnerabilities" tab in scan details
+
+**To configure scanner type:**
+1. Navigate to Networks in the web dashboard
+2. Create or edit a network
+3. Select the desired scanner type from the dropdown
+4. Greenbone scans will automatically include vulnerability assessment
+
+**Note:** Greenbone scanner currently uses simulated vulnerability data for demonstration. For production use, integrate with a real Greenbone/OpenVAS deployment.
 
 ## Architecture
 

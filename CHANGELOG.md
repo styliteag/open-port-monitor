@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Greenbone (OpenVAS) vulnerability scanner integration
+  - Added 'greenbone' as a new scanner type option for networks
+  - New `vulnerabilities` table to store vulnerability scan results
+  - Greenbone scanner module that performs vulnerability scanning after port discovery
+  - API endpoint `/api/scans/{scan_id}/vulnerabilities` to retrieve vulnerability data
+  - Vulnerabilities tab in scan detail page showing:
+    - Summary statistics (critical, high, medium, low vulnerabilities)
+    - Detailed vulnerability list with severity, CVE, description, and solution
+  - Scanner automatically runs vulnerability scans for networks configured with greenbone scanner type
+  - Vulnerability data includes NVT OID, severity (CVSS score), threat level, CVE references, and solutions
+
 ## [1.1.15] - 2026-02-03
 
 ## [1.1.14] - 2026-02-03
