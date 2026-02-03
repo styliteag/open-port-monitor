@@ -58,7 +58,7 @@ export type BulkAcknowledgeResponse = {
 }
 
 // Network types
-export type ScannerType = 'masscan' | 'nmap'
+export type ScannerType = 'masscan' | 'nmap' | 'greenbone'
 export type ScanProtocol = 'tcp' | 'udp' | 'both'
 
 export type Network = {
@@ -195,6 +195,7 @@ export type ScanDetail = {
   progress_percent: number | null
   progress_message: string | null
   open_ports: OpenPort[]
+  vulnerability_summary?: VulnerabilitySummary | null
 }
 
 export type ScanDiff = {
@@ -507,4 +508,36 @@ export type SSHHostHistoryResponse = {
   port: number
   history: SSHHostHistoryEntry[]
   total: number
+}
+
+// Vulnerability types (Greenbone scanner)
+export type Vulnerability = {
+  id: number
+  scan_id: number
+  host_ip: string
+  port: number | null
+  protocol: string | null
+  nvt_oid: string
+  name: string
+  severity: number
+  threat: string
+  cve: string | null
+  description: string | null
+  solution: string | null
+  solution_type: string | null
+  references: string | null
+  created_at: string
+}
+
+export type VulnerabilitySummary = {
+  total: number
+  critical: number
+  high: number
+  medium: number
+  low: number
+}
+
+export type VulnerabilityListResponse = {
+  vulnerabilities: Vulnerability[]
+  summary: VulnerabilitySummary
 }

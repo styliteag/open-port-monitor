@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext'
 import { API_BASE_URL, getAuthHeaders, fetchJson } from '../lib/api'
 import { ScanLogViewer } from '../components/ScanLogViewer'
 import { formatRawScanLogs, openScanLogsWindow, parseUtcDate } from '../utils/scanLogs'
-import type { OpenPort, ScanDetail, ScanDiff, ScanLogsResponse, ScansListResponse } from '../types'
+import type { OpenPort, ScanDetail, ScanDiff, ScanLogsResponse, ScansListResponse, VulnerabilityListResponse } from '../types'
 
 const formatDateTime = (value: Date) =>
   new Intl.DateTimeFormat(undefined, {
@@ -67,7 +67,7 @@ const ScanDetailPage = () => {
   const { token } = useAuth()
   const { scanId } = useParams<{ scanId: string }>()
   const [compareToId, setCompareToId] = useState<number | null>(null)
-  const [activeTab, setActiveTab] = useState<'ports' | 'logs'>('ports')
+  const [activeTab, setActiveTab] = useState<'ports' | 'logs' | 'vulnerabilities'>('ports')
   const [showExportDropdown, setShowExportDropdown] = useState(false)
   const [isExporting, setIsExporting] = useState(false)
   const [toast, setToast] = useState<ToastMessage | null>(null)
@@ -103,6 +103,13 @@ const ScanDetailPage = () => {
     queryFn: () => fetchJson<ScanLogsResponse>(`/api/scans/${scanId}/logs`, token ?? ''),
     enabled: Boolean(token && scanId),
     refetchInterval: scan?.status === 'running' ? 5000 : false,
+  })
+
+  // Fetch vulnerabilities for the scan
+  const vulnerabilitiesQuery = useQuery({
+    queryKey: ['scan', scanId, 'vulnerabilities'],
+    queryFn: () => fetchJson<VulnerabilityListResponse>(`/api/scans/${scanId}/vulnerabilities`, token ?? ''),
+    enabled: Boolean(token && scanId),
   })
 
   const logs = logsQuery.data?.logs ?? []
@@ -527,6 +534,17 @@ const ScanDetailPage = () => {
                   >
                     Logs ({logs.length})
                   </button>
+                  {scan.vulnerability_summary && (
+                    <button
+                      onClick={() => setActiveTab('vulnerabilities')}
+                      className={`px-6 py-3 text-sm font-semibold transition ${activeTab === 'vulnerabilities'
+                        ? 'border-b-2 border-cyan-500 text-cyan-600 dark:text-cyan-400'
+                        : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
+                        }`}
+                    >
+                      Vulnerabilities ({scan.vulnerability_summary.total})
+                    </button>
+                  )}
                 </div>
                 <button
                   type="button"
@@ -690,6 +708,131 @@ const ScanDetailPage = () => {
                     isError={logsQuery.isError}
                     onShowRaw={handleShowRawLogs}
                   />
+                </div>
+              ) : null}
+
+              {/* Vulnerabilities Tab Content */}
+              {activeTab === 'vulnerabilities' ? (
+                <div className="mt-6">
+                  {vulnerabilitiesQuery.isLoading ? (
+                    <div className="text-center py-8 text-slate-500 dark:text-slate-400">
+                      Loading vulnerabilities...
+                    </div>
+                  ) : vulnerabilitiesQuery.isError ? (
+                    <div className="text-center py-8 text-rose-500">
+                      Failed to load vulnerabilities
+                    </div>
+                  ) : vulnerabilitiesQuery.data ? (
+                    <div className="space-y-4">
+                      {/* Vulnerability Summary */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
+                        <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-900/40 p-4">
+                          <div className="text-2xl font-bold text-slate-900 dark:text-white">
+                            {vulnerabilitiesQuery.data.summary.total}
+                          </div>
+                          <div className="text-xs text-slate-600 dark:text-slate-400">Total</div>
+                        </div>
+                        <div className="rounded-xl border border-rose-200 dark:border-rose-900 bg-rose-50/60 dark:bg-rose-950/40 p-4">
+                          <div className="text-2xl font-bold text-rose-900 dark:text-rose-200">
+                            {vulnerabilitiesQuery.data.summary.critical}
+                          </div>
+                          <div className="text-xs text-rose-600 dark:text-rose-400">Critical (9.0+)</div>
+                        </div>
+                        <div className="rounded-xl border border-orange-200 dark:border-orange-900 bg-orange-50/60 dark:bg-orange-950/40 p-4">
+                          <div className="text-2xl font-bold text-orange-900 dark:text-orange-200">
+                            {vulnerabilitiesQuery.data.summary.high}
+                          </div>
+                          <div className="text-xs text-orange-600 dark:text-orange-400">High (7.0-8.9)</div>
+                        </div>
+                        <div className="rounded-xl border border-amber-200 dark:border-amber-900 bg-amber-50/60 dark:bg-amber-950/40 p-4">
+                          <div className="text-2xl font-bold text-amber-900 dark:text-amber-200">
+                            {vulnerabilitiesQuery.data.summary.medium}
+                          </div>
+                          <div className="text-xs text-amber-600 dark:text-amber-400">Medium (4.0-6.9)</div>
+                        </div>
+                        <div className="rounded-xl border border-blue-200 dark:border-blue-900 bg-blue-50/60 dark:bg-blue-950/40 p-4">
+                          <div className="text-2xl font-bold text-blue-900 dark:text-blue-200">
+                            {vulnerabilitiesQuery.data.summary.low}
+                          </div>
+                          <div className="text-xs text-blue-600 dark:text-blue-400">Low (&lt;4.0)</div>
+                        </div>
+                      </div>
+
+                      {/* Vulnerability List */}
+                      {vulnerabilitiesQuery.data.vulnerabilities.length === 0 ? (
+                        <div className="text-center py-8 text-slate-500 dark:text-slate-400">
+                          No vulnerabilities found
+                        </div>
+                      ) : (
+                        <div className="space-y-3">
+                          {vulnerabilitiesQuery.data.vulnerabilities.map((vuln) => (
+                            <div
+                              key={vuln.id}
+                              className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 p-4"
+                            >
+                              <div className="flex items-start justify-between gap-4">
+                                <div className="flex-1 space-y-2">
+                                  <div className="flex items-center gap-3">
+                                    <span
+                                      className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
+                                        vuln.severity >= 9.0
+                                          ? 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-200'
+                                          : vuln.severity >= 7.0
+                                          ? 'bg-orange-100 text-orange-800 dark:bg-orange-950 dark:text-orange-200'
+                                          : vuln.severity >= 4.0
+                                          ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-200'
+                                          : 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-200'
+                                      }`}
+                                    >
+                                      {vuln.threat} ({vuln.severity.toFixed(1)})
+                                    </span>
+                                    {vuln.cve && (
+                                      <span className="inline-flex rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-800 dark:bg-slate-800 dark:text-slate-200">
+                                        {vuln.cve}
+                                      </span>
+                                    )}
+                                  </div>
+                                  <h4 className="font-semibold text-slate-900 dark:text-white">
+                                    {vuln.name}
+                                  </h4>
+                                  <div className="text-sm text-slate-600 dark:text-slate-400">
+                                    <span className="font-mono">{vuln.host_ip}</span>
+                                    {vuln.port && (
+                                      <>
+                                        <span className="mx-2">•</span>
+                                        <span>Port {vuln.port}</span>
+                                        {vuln.protocol && <span> ({vuln.protocol.toUpperCase()})</span>}
+                                      </>
+                                    )}
+                                  </div>
+                                  {vuln.description && (
+                                    <p className="text-sm text-slate-700 dark:text-slate-300">
+                                      {vuln.description}
+                                    </p>
+                                  )}
+                                  {vuln.solution && (
+                                    <div className="rounded-lg bg-slate-50 dark:bg-slate-900 p-3">
+                                      <div className="text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">
+                                        Solution {vuln.solution_type && `(${vuln.solution_type})`}:
+                                      </div>
+                                      <div className="text-sm text-slate-700 dark:text-slate-300">
+                                        {vuln.solution}
+                                      </div>
+                                    </div>
+                                  )}
+                                  {vuln.references && (
+                                    <div className="text-xs text-slate-500 dark:text-slate-500">
+                                      <span className="font-semibold">References:</span> {vuln.references}
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ) : null}
                 </div>
               ) : null}
             </>
