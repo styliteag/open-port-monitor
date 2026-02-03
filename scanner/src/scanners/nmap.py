@@ -904,3 +904,351 @@ def run_nmap(
             os.unlink(phase2_targets_file)
         except OSError:
             pass
+
+
+def run_nmap_service_scripts(
+    client: ScannerClient,
+    scan_id: int,
+    open_ports: list[OpenPortResult],
+    logger: logging.Logger,
+) -> list[dict]:
+    """Run Nmap NSE scripts on discovered open ports to gather detailed service information.
+
+    Runs HTTP-specific scripts:
+    - http-title: Extract page title
+    - http-headers: Get HTTP headers
+    - http-methods: Discover supported HTTP methods
+
+    Returns list of service scan results.
+    """
+    if not open_ports:
+        return []
+
+    results: list[dict] = []
+
+    # Group ports by IP and filter for HTTP-like ports
+    http_ports = {80, 443, 8080, 8443, 8000, 8888, 3000}
+    http_targets: dict[str, set[int]] = {}
+
+    for port_result in open_ports:
+        # Include ports that are likely HTTP or have http in service name
+        is_http_port = port_result.port in http_ports
+        is_http_service = (
+            port_result.service_guess
+            and "http" in port_result.service_guess.lower()
+        )
+
+        if is_http_port or is_http_service:
+            if port_result.ip not in http_targets:
+                http_targets[port_result.ip] = set()
+            http_targets[port_result.ip].add(port_result.port)
+
+    if not http_targets:
+        logger.info("No HTTP services found, skipping NSE script scan")
+        return []
+
+    total_targets = sum(len(ports) for ports in http_targets.values())
+    logger.info(
+        "Running NSE scripts on %d HTTP services across %d hosts",
+        total_targets,
+        len(http_targets),
+    )
+
+    # Create temp files
+    targets_path: str | None = None
+    output_path: str | None = None
+
+    try:
+        # Write targets to file
+        with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".txt") as targets_file:
+            targets_path = targets_file.name
+            for ip in http_targets.keys():
+                targets_file.write(f"{ip}\n")
+
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".xml") as output_file:
+            output_path = output_file.name
+
+        # Build port list
+        all_ports: set[int] = set()
+        for ports in http_targets.values():
+            all_ports.update(ports)
+        port_list = ",".join(str(p) for p in sorted(all_ports))
+
+        # Build nmap command with NSE scripts
+        command = [
+            "nmap",
+            "-sV",  # Service detection
+            "-p",
+            port_list,
+            "--script",
+            "http-title,http-headers,http-methods",  # HTTP NSE scripts
+            "--script-args",
+            "http.useragent='Open Port Monitor Scanner'",
+            "-oX",
+            output_path,
+            "--open",
+            "-Pn",  # Skip host discovery
+            "-T4",  # Aggressive timing
+            "-iL",
+            targets_path,
+        ]
+
+        logger.info("NSE script command: %s", format_command(command))
+
+        # Run nmap with a timeout
+        pid, master_fd = pty.fork()
+
+        if pid == 0:
+            # Child process
+            try:
+                os.execvp(command[0], command)
+            except Exception as e:
+                sys.stderr.write(f"Failed to exec nmap: {e}\n")
+                os._exit(1)
+
+        # Parent process - wait for completion
+        child_exited = False
+        exit_status = 0
+        timeout = 300  # 5 minutes timeout for NSE scripts
+
+        try:
+            start_time = time.time()
+            buffer = ""
+
+            while True:
+                elapsed = time.time() - start_time
+
+                # Check timeout
+                if elapsed >= timeout:
+                    logger.warning("NSE script scan exceeded timeout; terminating")
+                    try:
+                        os.kill(pid, signal.SIGTERM)
+                    except OSError:
+                        pass
+                    break
+
+                # Check if child exited
+                try:
+                    wait_pid, wait_status = os.waitpid(pid, os.WNOHANG)
+                    if wait_pid != 0:
+                        child_exited = True
+                        if os.WIFEXITED(wait_status):
+                            exit_status = os.WEXITSTATUS(wait_status)
+                        elif os.WIFSIGNALED(wait_status):
+                            exit_status = -os.WTERMSIG(wait_status)
+                        break
+                except ChildProcessError:
+                    child_exited = True
+                    break
+
+                # Read PTY output
+                try:
+                    readable, _, _ = select.select([master_fd], [], [], 1.0)
+                    if master_fd in readable:
+                        try:
+                            data = os.read(master_fd, 4096)
+                            if not data:
+                                child_exited = True
+                                break
+                            text = data.decode("utf-8", errors="replace")
+                            buffer += text
+
+                            while "\n" in buffer or "\r" in buffer:
+                                line, sep, buffer = (
+                                    buffer.partition("\n")
+                                    if "\n" in buffer
+                                    else buffer.partition("\r")
+                                )
+                                line = line.strip()
+                                if line:
+                                    logger.debug("NSE: %s", line)
+
+                        except OSError:
+                            child_exited = True
+                            break
+                except (OSError, ValueError):
+                    pass
+
+            # Wait for child if not exited
+            if not child_exited:
+                try:
+                    for _ in range(10):
+                        wait_pid, wait_status = os.waitpid(pid, os.WNOHANG)
+                        if wait_pid != 0:
+                            if os.WIFEXITED(wait_status):
+                                exit_status = os.WEXITSTATUS(wait_status)
+                            elif os.WIFSIGNALED(wait_status):
+                                exit_status = -os.WTERMSIG(wait_status)
+                            child_exited = True
+                            break
+                        time.sleep(0.5)
+                    if not child_exited:
+                        logger.error("NSE script scan did not terminate; killing")
+                        os.kill(pid, signal.SIGKILL)
+                        os.waitpid(pid, 0)
+                except (ChildProcessError, OSError):
+                    pass
+        finally:
+            try:
+                os.close(master_fd)
+            except OSError:
+                pass
+
+        if exit_status != 0:
+            logger.warning("NSE script scan failed with exit code %d", exit_status)
+            return []
+
+        # Parse nmap XML output for NSE script results
+        xml_content = ""
+        try:
+            with open(output_path, "r", encoding="utf-8") as handle:
+                xml_content = handle.read()
+        except FileNotFoundError:
+            logger.warning("NSE script output file not found")
+            return []
+
+        results = _parse_nse_scripts_xml(xml_content, logger)
+        logger.info("NSE script scan found %d service details", len(results))
+
+        return results
+
+    except Exception as exc:
+        logger.warning("NSE script scan failed with error: %s", exc)
+        return []
+    finally:
+        # Clean up temp files
+        for path in [targets_path, output_path]:
+            if path:
+                try:
+                    os.remove(path)
+                except OSError:
+                    pass
+
+
+def _parse_nse_scripts_xml(xml_content: str, logger: logging.Logger) -> list[dict]:
+    """Parse Nmap XML output and extract NSE script results."""
+    results: list[dict] = []
+
+    try:
+        root = ET.fromstring(xml_content)
+    except ET.ParseError as exc:
+        logger.error("Failed to parse NSE script XML output: %s", exc)
+        return results
+
+    for host in root.findall(".//host"):
+        # Skip hosts that are not up
+        status_elem = host.find("status")
+        if status_elem is not None and status_elem.get("state") != "up":
+            continue
+
+        # Get IP address
+        ip_addr: str | None = None
+        for addr_elem in host.findall("address"):
+            addr_type = addr_elem.get("addrtype", "")
+            if addr_type in ("ipv4", "ipv6"):
+                ip_addr = addr_elem.get("addr")
+                break
+
+        if not ip_addr:
+            continue
+
+        # Process ports
+        ports_elem = host.find("ports")
+        if ports_elem is None:
+            continue
+
+        for port_elem in ports_elem.findall("port"):
+            # Check if port is open
+            state_elem = port_elem.find("state")
+            if state_elem is None or state_elem.get("state") != "open":
+                continue
+
+            # Get port number and protocol
+            port_id = port_elem.get("portid")
+            if port_id is None:
+                continue
+            try:
+                port_num = int(port_id)
+            except ValueError:
+                continue
+
+            protocol = port_elem.get("protocol", "tcp")
+
+            # Get service info
+            service_name: str | None = None
+            service_elem = port_elem.find("service")
+            if service_elem is not None:
+                service_name = service_elem.get("name")
+
+            # Extract NSE script results
+            http_title: str | None = None
+            http_status: int | None = None
+            http_server: str | None = None
+            http_methods: list[str] = []
+            http_headers: dict[str, str] = {}
+            nse_scripts: dict[str, str] = {}
+
+            for script_elem in port_elem.findall("script"):
+                script_id = script_elem.get("id", "")
+                script_output = script_elem.get("output", "")
+
+                # Store all script outputs
+                if script_id and script_output:
+                    nse_scripts[script_id] = script_output
+
+                # Parse http-title
+                if script_id == "http-title":
+                    # Output format: "Title: <title text>"
+                    if script_output.startswith("Title: "):
+                        http_title = script_output[7:].strip()
+                    else:
+                        http_title = script_output.strip()
+
+                # Parse http-headers
+                elif script_id == "http-headers":
+                    for line in script_output.split("\n"):
+                        line = line.strip()
+                        if ":" in line and not line.startswith("HTTP/"):
+                            # Parse header: "Header-Name: value"
+                            header_name, _, header_value = line.partition(":")
+                            header_name = header_name.strip()
+                            header_value = header_value.strip()
+                            if header_name and header_value:
+                                http_headers[header_name] = header_value
+                                # Extract specific headers
+                                if header_name.lower() == "server":
+                                    http_server = header_value
+                        elif line.startswith("HTTP/"):
+                            # Parse status: "HTTP/1.1 200 OK"
+                            parts = line.split()
+                            if len(parts) >= 2:
+                                try:
+                                    http_status = int(parts[1])
+                                except ValueError:
+                                    pass
+
+                # Parse http-methods
+                elif script_id == "http-methods":
+                    for line in script_output.split("\n"):
+                        line = line.strip()
+                        if "Supported Methods:" in line:
+                            methods_str = line.split("Supported Methods:", 1)[1].strip()
+                            http_methods = [m.strip() for m in methods_str.split() if m.strip()]
+
+            # Only create result if we found NSE script data
+            if nse_scripts:
+                result = {
+                    "host_ip": ip_addr,
+                    "port": port_num,
+                    "protocol": protocol,
+                    "service_name": service_name,
+                    "http_title": http_title,
+                    "http_status": http_status,
+                    "http_server": http_server,
+                    "http_methods": http_methods if http_methods else None,
+                    "http_headers": http_headers if http_headers else None,
+                    "nse_scripts": nse_scripts,
+                }
+                results.append(result)
+
+    return results

@@ -21,6 +21,7 @@ from .routers import (
     scanner,
     scanners,
     scans,
+    services,
     ssh,
     trends,
     users,
@@ -83,6 +84,7 @@ app.include_router(ports.router)
 app.include_router(scanner.router)
 app.include_router(scans.router)
 app.include_router(scanners.router)
+app.include_router(services.router)
 app.include_router(ssh.router)
 app.include_router(trends.router)
 app.include_router(users.router)
