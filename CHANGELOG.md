@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- HTTP and service scanning with Nmap NSE scripts
+  - Automatically runs HTTP-specific NSE scripts (http-title, http-headers, http-methods) on discovered HTTP services
+  - New ServiceScanResult model and database table for storing detailed service information
+  - Service scan results include HTTP page titles, server headers, status codes, and supported methods
+  - New `/api/services/hosts` endpoint to list all discovered services
+  - New `/api/scans/{scan_id}/services` endpoint to view service scan results for a specific scan
+  - New "Services" page in frontend to browse and filter service scan results
+  - Service scan results automatically displayed in scan details
+  - Results appear in the global overview for comprehensive security monitoring
+
 ## [1.1.15] - 2026-02-03
 
 ## [1.1.14] - 2026-02-03
