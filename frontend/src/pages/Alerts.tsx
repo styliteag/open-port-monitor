@@ -12,6 +12,7 @@ import type {
   PolicyListResponse,
 } from '../types'
 import { ALERT_TYPE_LABELS, ALERT_TYPE_STYLES } from '../constants/alerts'
+import { Card, Badge, Button, PageHeader, EmptyState, Modal } from '../components/ui'
 
 const formatDateTime = (value: Date) =>
   new Intl.DateTimeFormat(undefined, {
@@ -285,27 +286,16 @@ const Alerts = () => {
       <div className="pointer-events-none absolute right-0 top-32 h-64 w-64 animate-drift rounded-full bg-amber-500/20 blur-[140px]" />
 
       <section className="relative z-10 space-y-8">
-        <div className="rounded-3xl border border-slate-200/70 bg-white/80 p-8 shadow-[0_20px_80px_rgba(15,23,42,0.12)] backdrop-blur dark:border-slate-800/70 dark:bg-slate-950/70">
-          <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
-            <div>
-              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-                Security Alerts
-              </p>
-              <h2 className="mt-3 font-display text-3xl text-slate-900 dark:text-white">Alerts</h2>
-              <p className="mt-2 max-w-2xl text-sm text-slate-600 dark:text-slate-300">
-                Investigate security alerts, acknowledge findings, and track resolution across your
-                monitored networks.
-              </p>
-            </div>
-            <div className="flex flex-wrap items-center gap-3">
-              <Link
-                to="/"
-                className="rounded-full border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-600 transition hover:border-slate-300 hover:bg-slate-100 dark:border-slate-800 dark:text-slate-300 dark:hover:border-slate-700 dark:hover:bg-slate-900"
-              >
-                Back to dashboard
-              </Link>
-            </div>
-          </div>
+        <Card variant="page">
+          <PageHeader
+            subtitle="Security Alerts"
+            title="Alerts"
+            description="Investigate security alerts, acknowledge findings, and track resolution across your monitored networks."
+          >
+            <Link to="/">
+              <Button variant="secondary">Back to dashboard</Button>
+            </Link>
+          </PageHeader>
 
           <div className="mt-6 flex flex-wrap items-center gap-2">
             {[
@@ -328,7 +318,7 @@ const Alerts = () => {
             <select
               value={typeFilter ?? ''}
               onChange={(e) => updateFilter('type', e.target.value)}
-              className="rounded-2xl border border-slate-200/70 bg-white px-4 py-2 text-sm font-medium text-slate-900 focus:border-cyan-400 focus:outline-none dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
+              className="rounded-xl border border-slate-200/70 bg-white px-4 py-2 text-sm font-medium text-slate-900 focus:border-cyan-400 focus:outline-none dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
             >
               <option value="">All types</option>
               <option value="new_port">New Port</option>
@@ -338,7 +328,7 @@ const Alerts = () => {
             <select
               value={networkIdFilter ?? ''}
               onChange={(e) => updateFilter('network_id', e.target.value)}
-              className="rounded-2xl border border-slate-200/70 bg-white px-4 py-2 text-sm font-medium text-slate-900 focus:border-cyan-400 focus:outline-none dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
+              className="rounded-xl border border-slate-200/70 bg-white px-4 py-2 text-sm font-medium text-slate-900 focus:border-cyan-400 focus:outline-none dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
             >
               <option value="">All networks</option>
               {networks.map((n) => (
@@ -361,12 +351,12 @@ const Alerts = () => {
           </div>
 
           {actionMessage && (
-            <div className="mt-4 rounded-2xl border border-emerald-200/70 bg-emerald-50/80 px-4 py-3 text-sm text-emerald-700 dark:border-emerald-500/40 dark:bg-emerald-500/10 dark:text-emerald-100">
+            <div className="mt-4 rounded-xl border border-emerald-200/70 bg-emerald-50/80 px-4 py-3 text-sm text-emerald-700 dark:border-emerald-500/40 dark:bg-emerald-500/10 dark:text-emerald-100">
               {actionMessage}
             </div>
           )}
 
-          <div className="mt-6 overflow-hidden rounded-2xl border border-slate-200/70 dark:border-slate-800/70">
+          <div className="mt-6 overflow-hidden rounded-xl border border-slate-200/70 dark:border-slate-800/70">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-slate-200/70 bg-slate-50/80 text-left text-xs font-semibold text-slate-500 dark:border-slate-800/70 dark:bg-slate-900/60 dark:text-slate-300">
@@ -428,11 +418,14 @@ const Alerts = () => {
                           </td>
                         )}
                         <td className="px-4 py-3">
-                          <span
-                            className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold ${ALERT_TYPE_STYLES[alert.type] || 'border-slate-300/60 bg-slate-200/40 text-slate-600 dark:border-slate-600/60 dark:bg-slate-800/60 dark:text-slate-300'}`}
+                          <Badge
+                            colorClasses={
+                              ALERT_TYPE_STYLES[alert.type] ||
+                              'border-slate-300/60 bg-slate-200/40 text-slate-600 dark:border-slate-600/60 dark:bg-slate-800/60 dark:text-slate-300'
+                            }
                           >
                             {ALERT_TYPE_LABELS[alert.type] || alert.type}
-                          </span>
+                          </Badge>
                         </td>
                         <td className="whitespace-nowrap px-4 py-3 text-slate-900 dark:text-white">
                           {alert.network_name ?? (
@@ -456,9 +449,9 @@ const Alerts = () => {
                         <td className="whitespace-nowrap px-4 py-3 text-right">
                           <div className="flex items-center justify-end gap-2">
                             {isAllowed(alert) && (
-                              <span className="inline-flex items-center rounded-full border border-emerald-300/60 bg-emerald-500/15 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 dark:border-emerald-500/40 dark:bg-emerald-500/20 dark:text-emerald-200">
+                              <Badge colorClasses="border-emerald-300/60 bg-emerald-500/15 text-emerald-700 dark:border-emerald-500/40 dark:bg-emerald-500/20 dark:text-emerald-200" className="px-2 py-0.5 text-[10px]">
                                 Whitelisted
-                              </span>
+                              </Badge>
                             )}
                             {alert.acknowledged ? (
                               isAdmin ? (
@@ -471,9 +464,9 @@ const Alerts = () => {
                                   Acknowledged ✓
                                 </button>
                               ) : (
-                                <span className="inline-flex items-center rounded-full border border-emerald-300/50 bg-emerald-500/15 px-3 py-1 text-xs font-semibold text-emerald-700 dark:border-emerald-400/40 dark:bg-emerald-500/20 dark:text-emerald-200">
+                                <Badge colorClasses="border-emerald-300/50 bg-emerald-500/15 text-emerald-700 dark:border-emerald-400/40 dark:bg-emerald-500/20 dark:text-emerald-200">
                                   Acknowledged ✓
-                                </span>
+                                </Badge>
                               )
                             ) : isAdmin ? (
                               <button
@@ -483,9 +476,9 @@ const Alerts = () => {
                                 Resolve
                               </button>
                             ) : (
-                              <span className="inline-flex items-center rounded-full border border-amber-300/50 bg-amber-500/15 px-3 py-1 text-xs font-semibold text-amber-700 dark:border-amber-400/40 dark:bg-amber-500/20 dark:text-amber-200">
+                              <Badge colorClasses="border-amber-300/50 bg-amber-500/15 text-amber-700 dark:border-amber-400/40 dark:bg-amber-500/20 dark:text-amber-200">
                                 Pending
-                              </span>
+                              </Badge>
                             )}
                           </div>
                         </td>
@@ -496,111 +489,109 @@ const Alerts = () => {
               </tbody>
             </table>
           </div>
-        </div>
+        </Card>
       </section>
 
       {actionModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="mx-4 w-full max-w-md rounded-2xl border border-slate-200/70 bg-white p-6 shadow-2xl dark:border-slate-800/70 dark:bg-slate-900">
-            <div className="mb-4 flex items-start justify-between">
-              <div>
-                <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-                  Resolve Alert
-                </p>
-                <h3 className="mt-1 text-lg font-semibold text-slate-900 dark:text-white">
-                  {actionModal.alert.ip}:{actionModal.alert.port}
-                </h3>
-              </div>
-              <button
-                onClick={() => {
-                  setActionModal(null)
-                  setWhitelistReason('')
-                }}
-                className="rounded-full p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800"
-              >
-                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              </button>
+        <Modal maxWidth="max-w-md">
+          <div className="mb-4 flex items-start justify-between">
+            <div>
+              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                Resolve Alert
+              </p>
+              <h3 className="mt-1 text-lg font-semibold text-slate-900 dark:text-white">
+                {actionModal.alert.ip}:{actionModal.alert.port}
+              </h3>
             </div>
-            <div className="mb-6 space-y-2">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
-                Justification / Reason
-              </label>
-              <input
-                type="text"
-                autoFocus
-                value={whitelistReason}
-                onChange={(e) => setWhitelistReason(e.target.value)}
-                placeholder="Required for whitelisting..."
-                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/5 outline-none transition-all dark:border-slate-800 dark:bg-slate-950 dark:text-white"
-              />
-            </div>
+            <button
+              onClick={() => {
+                setActionModal(null)
+                setWhitelistReason('')
+              }}
+              className="rounded-full p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800"
+            >
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+          </div>
+          <div className="mb-6 space-y-2">
+            <label className="ml-1 text-[10px] font-black uppercase tracking-widest text-slate-400">
+              Justification / Reason
+            </label>
+            <input
+              type="text"
+              autoFocus
+              value={whitelistReason}
+              onChange={(e) => setWhitelistReason(e.target.value)}
+              placeholder="Required for whitelisting..."
+              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition-all placeholder:text-slate-400 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/5 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
+            />
+          </div>
 
-            <div className="space-y-3">
-              <div className="group rounded-xl border border-emerald-200 bg-emerald-50/50 p-4 transition-all hover:bg-emerald-50 dark:border-emerald-500/30 dark:bg-emerald-500/5 dark:hover:bg-emerald-500/10">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-300">
-                    ✅
-                  </div>
-                  <div className="flex-1">
-                    <p className="font-medium text-emerald-700 dark:text-emerald-200">
-                      Whitelist Globally
-                    </p>
-                    <p className="text-xs text-emerald-600/80 dark:text-emerald-300/70">
-                      Clear alert and allow on all networks
-                    </p>
-                  </div>
-                </div>
-                <button
-                  onClick={handleWhitelist}
-                  disabled={
-                    !whitelistReason.trim() ||
-                    acknowledgeMutation.isPending ||
-                    whitelistMutation.isPending
-                  }
-                  className="mt-3 w-full rounded-lg bg-emerald-600 px-4 py-2.5 text-xs font-black uppercase tracking-widest text-white shadow-lg transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400 disabled:shadow-none dark:bg-emerald-500 dark:disabled:bg-slate-800 dark:disabled:text-slate-600"
-                >
-                  {whitelistMutation.isPending ? 'Processing...' : 'Whitelist'}
-                </button>
-              </div>
-
-              <div className="relative py-2">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-slate-100 dark:border-slate-800"></div>
-                </div>
-                <div className="relative flex justify-center">
-                  <span className="bg-white px-3 text-[10px] font-black uppercase tracking-[0.3em] text-slate-300 dark:bg-slate-900">
-                    Alternative
-                  </span>
-                </div>
-              </div>
-
-              <button
-                onClick={handleAcknowledgeOnly}
-                disabled={acknowledgeMutation.isPending || whitelistMutation.isPending}
-                className="group flex w-full items-center gap-3 rounded-xl border border-slate-200 p-4 text-left transition hover:border-slate-300 hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-800/50"
-              >
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-400 transition-colors group-hover:bg-indigo-100 group-hover:text-indigo-600 dark:bg-slate-800">
-                  👁️
+          <div className="space-y-3">
+            <div className="group rounded-xl border border-emerald-200 bg-emerald-50/50 p-4 transition-all hover:bg-emerald-50 dark:border-emerald-500/30 dark:bg-emerald-500/5 dark:hover:bg-emerald-500/10">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-300">
+                  ✅
                 </div>
                 <div className="flex-1">
-                  <p className="font-medium text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400">
-                    Just Acknowledge
+                  <p className="font-medium text-emerald-700 dark:text-emerald-200">
+                    Whitelist Globally
                   </p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">
-                    Mark as reviewed without whitelist
+                  <p className="text-xs text-emerald-600/80 dark:text-emerald-300/70">
+                    Clear alert and allow on all networks
                   </p>
                 </div>
+              </div>
+              <button
+                onClick={handleWhitelist}
+                disabled={
+                  !whitelistReason.trim() ||
+                  acknowledgeMutation.isPending ||
+                  whitelistMutation.isPending
+                }
+                className="mt-3 w-full rounded-lg bg-emerald-600 px-4 py-2.5 text-xs font-black uppercase tracking-widest text-white shadow-lg transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400 disabled:shadow-none dark:bg-emerald-500 dark:disabled:bg-slate-800 dark:disabled:text-slate-600"
+              >
+                {whitelistMutation.isPending ? 'Processing...' : 'Whitelist'}
               </button>
             </div>
+
+            <div className="relative py-2">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-slate-100 dark:border-slate-800"></div>
+              </div>
+              <div className="relative flex justify-center">
+                <span className="bg-white px-3 text-[10px] font-black uppercase tracking-[0.3em] text-slate-300 dark:bg-slate-900">
+                  Alternative
+                </span>
+              </div>
+            </div>
+
+            <button
+              onClick={handleAcknowledgeOnly}
+              disabled={acknowledgeMutation.isPending || whitelistMutation.isPending}
+              className="group flex w-full items-center gap-3 rounded-xl border border-slate-200 p-4 text-left transition hover:border-slate-300 hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-800/50"
+            >
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-400 transition-colors group-hover:bg-indigo-100 group-hover:text-indigo-600 dark:bg-slate-800">
+                👁️
+              </div>
+              <div className="flex-1">
+                <p className="font-medium text-slate-900 group-hover:text-indigo-600 dark:text-white dark:group-hover:text-indigo-400">
+                  Just Acknowledge
+                </p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  Mark as reviewed without whitelist
+                </p>
+              </div>
+            </button>
           </div>
-        </div>
+        </Modal>
       )}
     </div>
   )
