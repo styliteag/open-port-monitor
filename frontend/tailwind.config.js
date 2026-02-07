@@ -5,19 +5,21 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['var(--opm-sans)'],
-        display: ['var(--opm-display)'],
+        sans: ['Space Grotesk', 'Segoe UI', 'sans-serif'],
+        display: ['Inter', 'Space Grotesk', 'Segoe UI', 'sans-serif'],
       },
-      colors: {
-        opm: {
-          ink: 'var(--opm-ink)',
-          bg: 'var(--opm-bg)',
-          card: 'var(--opm-card)',
+      animation: {
+        rise: 'rise 0.7s ease both',
+        drift: 'drift 12s ease-in-out infinite',
+      },
+      keyframes: {
+        rise: {
+          from: { opacity: '0', transform: 'translateY(16px)' },
+          to: { opacity: '1', transform: 'translateY(0)' },
         },
-        tooltip: {
-          bg: 'var(--tooltip-bg)',
-          border: 'var(--tooltip-border)',
-          text: 'var(--tooltip-text)',
+        drift: {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-12px)' },
         },
       },
     },

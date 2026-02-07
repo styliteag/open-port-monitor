@@ -39,8 +39,8 @@ def upgrade() -> None:
     if not table_exists("ssh_scan_results"):
         op.create_table(
             "ssh_scan_results",
-            sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
-            sa.Column("scan_id", sa.Integer(), nullable=False),
+            sa.Column("id", sa.BigInteger(), autoincrement=True, nullable=False),
+            sa.Column("scan_id", sa.BigInteger(), nullable=False),
             sa.Column("host_ip", sa.String(45), nullable=False),
             sa.Column("port", sa.Integer(), nullable=False, server_default="22"),
             sa.Column(

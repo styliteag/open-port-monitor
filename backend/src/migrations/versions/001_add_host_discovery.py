@@ -55,7 +55,7 @@ def upgrade() -> None:
     if not table_exists("hosts"):
         op.create_table(
             "hosts",
-            sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
+            sa.Column("id", sa.BigInteger(), autoincrement=True, nullable=False),
             sa.Column("ip", sa.String(45), nullable=False),
             sa.Column("hostname", sa.String(255), nullable=True),
             sa.Column("is_pingable", sa.Boolean(), nullable=True),
@@ -85,9 +85,9 @@ def upgrade() -> None:
     if not table_exists("host_discovery_scans"):
         op.create_table(
             "host_discovery_scans",
-            sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
-            sa.Column("network_id", sa.Integer(), nullable=False),
-            sa.Column("scanner_id", sa.Integer(), nullable=False),
+            sa.Column("id", sa.BigInteger(), autoincrement=True, nullable=False),
+            sa.Column("network_id", sa.BigInteger(), nullable=False),
+            sa.Column("scanner_id", sa.BigInteger(), nullable=False),
             sa.Column(
                 "status",
                 sa.Enum(
@@ -126,7 +126,7 @@ def upgrade() -> None:
     if not column_exists("global_open_ports", "host_id"):
         op.add_column(
             "global_open_ports",
-            sa.Column("host_id", sa.Integer(), nullable=True),
+            sa.Column("host_id", sa.BigInteger(), nullable=True),
         )
     if not index_exists("global_open_ports", "ix_global_open_ports_host_id"):
         op.create_index("ix_global_open_ports_host_id", "global_open_ports", ["host_id"])

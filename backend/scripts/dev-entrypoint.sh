@@ -15,9 +15,45 @@ echo "Starting Open Port Monitor Backend version: ${VERSION}"
 echo "Waiting for database to be ready..."
 uv run python /app/scripts/wait-for-db.py || exit 1
 
-# Run migrations BEFORE starting uvicorn (consistent with production)
-echo "Running database migrations..."
-uv run alembic upgrade head
+# Create all tables from models, then stamp alembic to head (skip migrations on fresh DB)
+echo "Initializing database schema..."
+cd /app && uv run python -c "
+import sys; sys.path.insert(0, '/app/src')
+from sqlalchemy import create_engine, text
+from app.models import Base
+import os
+url = os.environ.get('DATABASE_URL', '').replace('+aiomysql', '+pymysql')
+if not url:
+    url = 'mysql+pymysql://{user}:{pw}@{host}:{port}/{db}'.format(
+        user=os.environ.get('DB_USER','opm'),
+        pw=os.environ.get('DB_PASSWORD','opm'),
+        host=os.environ.get('DB_HOST','db'),
+        port=os.environ.get('DB_PORT','3306'),
+        db=os.environ.get('DB_NAME','openportmonitor'))
+engine = create_engine(url)
+with engine.begin() as conn:
+    existing = set(row[0] for row in conn.execute(text('SHOW TABLES')))
+    if 'alembic_version' not in existing:
+        # Fresh DB: create all tables from models, then stamp
+        print('Fresh database detected, creating all tables from models...')
+        for table in Base.metadata.sorted_tables:
+            if table.name not in existing:
+                table.create(conn, checkfirst=False)
+                print(f'  Created: {table.name}')
+        fresh = True
+    else:
+        fresh = False
+        print('Existing database, running migrations...')
+engine.dispose()
+if fresh:
+    print('Stamping alembic to head...')
+    import subprocess
+    subprocess.run(['uv', 'run', 'alembic', 'stamp', 'head'], check=True)
+else:
+    import subprocess
+    subprocess.run(['uv', 'run', 'alembic', 'upgrade', 'head'], check=True)
+print('Database ready.')
+"
 
 # Initialize admin user BEFORE starting workers (single process, no race condition)
 echo "Initializing admin user..."

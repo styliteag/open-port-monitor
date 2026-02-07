@@ -39,9 +39,9 @@ def upgrade() -> None:
     if not table_exists("alert_comments"):
         op.create_table(
             "alert_comments",
-            sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
-            sa.Column("alert_id", sa.Integer(), nullable=False),
-            sa.Column("user_id", sa.Integer(), nullable=False),
+            sa.Column("id", sa.BigInteger(), autoincrement=True, nullable=False),
+            sa.Column("alert_id", sa.BigInteger(), nullable=False),
+            sa.Column("user_id", sa.BigInteger(), nullable=False),
             sa.Column("comment", sa.Text(), nullable=False),
             sa.Column(
                 "created_at",

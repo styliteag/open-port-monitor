@@ -48,7 +48,7 @@ def upgrade() -> None:
     if not column_exists("alerts", "assigned_to_user_id"):
         op.add_column(
             "alerts",
-            sa.Column("assigned_to_user_id", sa.Integer(), nullable=True),
+            sa.Column("assigned_to_user_id", sa.BigInteger(), nullable=True),
         )
     if not fk_exists("alerts", "fk_alerts_assigned_to_user_id"):
         op.create_foreign_key(
