@@ -1,3 +1,4 @@
+import { formatDateTime, parseUtcDate, formatRelativeTime } from '../lib/dates'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import React, { useState, useMemo, useCallback, useEffect } from 'react'
 import { Link } from 'react-router-dom'
@@ -5,26 +6,6 @@ import AlertComments from '../components/AlertComments'
 import { useAuth } from '../context/AuthContext'
 import { API_BASE_URL, extractErrorMessage, fetchJson, getAuthHeaders } from '../lib/api'
 import type { Alert, AlertListResponse, NetworkListResponse, PolicyListResponse, GlobalOpenPort, GlobalOpenPortListResponse, UserListResponse, ResolutionStatus } from '../types'
-
-const formatDateTime = (value: Date) =>
-    new Intl.DateTimeFormat(undefined, {
-        dateStyle: 'medium',
-        timeStyle: 'short',
-    }).format(value)
-
-const parseUtcDate = (dateStr: string) => new Date(dateStr.endsWith('Z') ? dateStr : dateStr + 'Z')
-
-const formatRelativeTime = (value: Date, now: Date) => {
-    const diffMs = now.getTime() - value.getTime()
-    if (diffMs < 0) return 'Just now'
-    const minutes = Math.floor(diffMs / 60000)
-    if (minutes < 1) return 'Just now'
-    if (minutes < 60) return `${minutes}m ago`
-    const hours = Math.floor(minutes / 60)
-    if (hours < 24) return `${hours}h ago`
-    const days = Math.floor(hours / 24)
-    return `${days}d ago`
-}
 
 const getServiceName = (serviceGuess: string | null | undefined, banner: string | null | undefined): string => {
     // Use service_guess if available

@@ -1,3 +1,4 @@
+import { formatDateTime, parseUtcDate, formatRelativeTime } from '../lib/dates'
 import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '../context/AuthContext'
@@ -8,37 +9,6 @@ import type {
   ScannerListResponse,
   ScannerRegenerateKeyResponse,
 } from '../types'
-
-const formatDateTime = (value: Date) =>
-  new Intl.DateTimeFormat(undefined, {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  }).format(value)
-
-const formatRelativeTime = (value: Date, now: Date) => {
-  const diffMs = now.getTime() - value.getTime()
-  if (diffMs < 0) {
-    return 'Just now'
-  }
-  const minutes = Math.floor(diffMs / 60000)
-  if (minutes < 1) {
-    return 'Just now'
-  }
-  if (minutes < 60) {
-    return `${minutes}m ago`
-  }
-  const hours = Math.floor(minutes / 60)
-  if (hours < 24) {
-    return `${hours}h ago`
-  }
-  const days = Math.floor(hours / 24)
-  return `${days}d ago`
-}
-
-const parseUtcDate = (dateStr: string) => {
-  // API returns UTC timestamps without timezone suffix, so append 'Z' to parse as UTC
-  return new Date(dateStr.endsWith('Z') ? dateStr : dateStr + 'Z')
-}
 
 const isOnline = (lastSeenAt: string | null, now: Date) => {
   if (!lastSeenAt) return false

@@ -1,17 +1,9 @@
+import { formatDateTime, parseUtcDate } from '../lib/dates'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { API_BASE_URL, extractErrorMessage, getAuthHeaders } from '../lib/api'
 import type { AlertComment, AlertCommentListResponse } from '../types'
-
-const formatDateTime = (value: Date) =>
-    new Intl.DateTimeFormat(undefined, {
-        dateStyle: 'medium',
-        timeStyle: 'short',
-    }).format(value)
-
-const parseUtcDate = (dateStr: string) =>
-    new Date(dateStr.endsWith('Z') ? dateStr : dateStr + 'Z')
 
 type AlertCommentsProps = {
     alertId: number

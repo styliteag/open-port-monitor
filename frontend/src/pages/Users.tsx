@@ -1,20 +1,10 @@
+import { formatDateTime, parseUtcDate, formatRelativeTime } from '../lib/dates'
 import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Navigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { API_BASE_URL, extractErrorMessage, fetchJson, getAuthHeaders } from '../lib/api'
 import type { User, UserListResponse, UserRole } from '../types'
-
-const formatDateTime = (value: Date) =>
-  new Intl.DateTimeFormat(undefined, {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  }).format(value)
-
-const parseUtcDate = (dateStr: string) => {
-  // API returns UTC timestamps without timezone suffix, so append 'Z' to parse as UTC
-  return new Date(dateStr.endsWith('Z') ? dateStr : dateStr + 'Z')
-}
 
 const roleStyles: Record<UserRole, string> = {
   admin:

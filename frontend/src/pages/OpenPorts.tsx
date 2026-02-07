@@ -1,3 +1,4 @@
+import { formatDateTime, parseUtcDate, formatRelativeTime } from '../lib/dates'
 import React, { useEffect, useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
@@ -32,14 +33,6 @@ type WhitelistPayload = {
   port: string
   description: string | null
 }
-
-const formatDateTime = (value: Date) =>
-  new Intl.DateTimeFormat(undefined, {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  }).format(value)
-
-const parseUtcDate = (dateStr: string) => new Date(dateStr.endsWith('Z') ? dateStr : dateStr + 'Z')
 
 const compressIpv6 = (value: string) => {
   const lower = value.toLowerCase()

@@ -1,12 +1,7 @@
+import { formatDateTime } from '../lib/dates'
 import { useMemo, useRef, useEffect } from 'react'
 import type { ScanLogEntry } from '../types'
 import { parseUtcDate } from '../utils/scanLogs'
-
-const formatDateTime = (value: Date) =>
-  new Intl.DateTimeFormat(undefined, {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  }).format(value)
 
 const logLevelStyles: Record<string, string> = {
   info: 'text-slate-700 dark:text-slate-200',

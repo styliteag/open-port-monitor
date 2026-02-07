@@ -1,3 +1,4 @@
+import { formatDateTime } from '../lib/dates'
 import { useEffect, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Link, useParams } from 'react-router-dom'
@@ -6,12 +7,6 @@ import { API_BASE_URL, getAuthHeaders, fetchJson } from '../lib/api'
 import { ScanLogViewer } from '../components/ScanLogViewer'
 import { formatRawScanLogs, openScanLogsWindow, parseUtcDate } from '../utils/scanLogs'
 import type { OpenPort, ScanDetail, ScanDiff, ScanLogsResponse, ScansListResponse } from '../types'
-
-const formatDateTime = (value: Date) =>
-  new Intl.DateTimeFormat(undefined, {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  }).format(value)
 
 const formatDuration = (startedAt: string | null, completedAt: string | null) => {
   if (!startedAt) {
