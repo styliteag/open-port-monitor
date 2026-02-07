@@ -1,10 +1,10 @@
-import { formatDateTime, parseUtcDate, formatRelativeTime } from '../lib/dates'
 import { useEffect, useMemo, useState } from 'react'
 import { useMutation, useQueries, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { API_BASE_URL, extractErrorMessage, fetchJson, getAuthHeaders } from '../lib/api'
 import ScanEstimateSummary from '../components/ScanEstimateSummary'
+import { Card, Badge, Button, PageHeader, Modal } from '../components/ui'
 import type {
   AlertListResponse,
   CreateNetworkPayload,
@@ -16,6 +16,28 @@ import type {
   Scanner,
   ScannerListResponse,
 } from '../types'
+
+const formatDateTime = (value: Date) =>
+  new Intl.DateTimeFormat(undefined, {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+  }).format(value)
+
+const parseUtcDate = (dateStr: string) => {
+  return new Date(dateStr.endsWith('Z') ? dateStr : dateStr + 'Z')
+}
+
+const formatRelativeTime = (value: Date, now: Date) => {
+  const diffMs = now.getTime() - value.getTime()
+  if (diffMs < 0) return 'Just now'
+  const minutes = Math.floor(diffMs / 60000)
+  if (minutes < 1) return 'Just now'
+  if (minutes < 60) return `${minutes}m ago`
+  const hours = Math.floor(minutes / 60)
+  if (hours < 24) return `${hours}h ago`
+  const days = Math.floor(hours / 24)
+  return `${days}d ago`
+}
 
 const statusStyles: Record<string, string> = {
   planned:
@@ -73,6 +95,9 @@ const ipVersionLabels: Record<'ipv4' | 'ipv6', string> = {
 
 const DEFAULT_SCAN_TIMEOUT_MINUTES = '60'
 const DEFAULT_PORT_TIMEOUT = '1500'
+
+const inputClass =
+  'w-full rounded-xl border border-slate-200/70 bg-white px-4 py-2 text-sm font-medium text-slate-900 shadow-sm focus:border-cyan-400 focus:outline-none dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100'
 
 const Networks = () => {
   const { token, user } = useAuth()
@@ -156,9 +181,7 @@ const Networks = () => {
   }, [alertsQuery.data?.alerts])
 
   useEffect(() => {
-    if (!showCreate) {
-      return
-    }
+    if (!showCreate) return
     if (!formValues.siteId && sitesQuery.data?.scanners?.length) {
       setFormValues((prev) => ({
         ...prev,
@@ -177,12 +200,10 @@ const Networks = () => {
         },
         body: JSON.stringify(payload),
       })
-
       if (!response.ok) {
         const message = await extractErrorMessage(response)
         throw new Error(message)
       }
-
       return response.json()
     },
     onSuccess: async () => {
@@ -234,7 +255,6 @@ const Networks = () => {
       setFormError('Authentication required to create a network.')
       return
     }
-
     if (!formValues.siteId) {
       setFormError('Please select a site for this network.')
       return
@@ -286,35 +306,21 @@ const Networks = () => {
       <div className="pointer-events-none absolute right-8 top-36 h-64 w-64 animate-drift rounded-full bg-emerald-500/15 blur-[140px]" />
 
       <section className="relative z-10 space-y-6">
-        <div className="animate-rise rounded-3xl border border-slate-200/70 bg-white/80 p-8 shadow-[0_20px_80px_rgba(15,23,42,0.12)] backdrop-blur dark:border-slate-800/70 dark:bg-slate-950/70">
-          <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
-            <div>
-              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">Networks</p>
-              <h2 className="mt-3 font-display text-3xl text-slate-900 dark:text-white">
-                Monitored network inventory
-              </h2>
-              <p className="mt-2 max-w-2xl text-sm text-slate-600 dark:text-slate-300">
-                Track the ranges assigned to each scanner, review last scan status, and keep an eye
-                on active alert volumes.
-              </p>
-            </div>
-            <div className="flex flex-wrap items-center gap-3">
-              <div className="rounded-2xl border border-slate-200/70 bg-slate-50/80 px-4 py-3 text-xs text-slate-500 shadow-sm dark:border-slate-800/80 dark:bg-slate-900/60 dark:text-slate-300">
-                {isLoading ? 'Refreshing networks...' : `Updated ${formatDateTime(now)}`}
-              </div>
-              {user?.role === 'admin' ? (
-                <button
-                  type="button"
-                  onClick={openCreateModal}
-                  className="rounded-full border border-slate-900 bg-slate-900 px-4 py-2 text-xs font-semibold text-white transition hover:-translate-y-0.5 hover:bg-slate-800 dark:border-white dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200"
-                >
-                  Create Network
-                </button>
-              ) : null}
-            </div>
-          </div>
+        <Card variant="page" className="animate-rise">
+          <PageHeader
+            subtitle="Networks"
+            title="Monitored network inventory"
+            description="Track the ranges assigned to each scanner, review last scan status, and keep an eye on active alert volumes."
+          >
+            <Card variant="info" className="text-xs text-slate-500 shadow-sm dark:text-slate-300">
+              {isLoading ? 'Refreshing networks...' : `Updated ${formatDateTime(now)}`}
+            </Card>
+            {user?.role === 'admin' ? (
+              <Button onClick={openCreateModal}>Create Network</Button>
+            ) : null}
+          </PageHeader>
 
-          <div className="mt-8 overflow-hidden rounded-2xl border border-slate-200/70 bg-white/80 shadow-sm dark:border-slate-800/70 dark:bg-slate-900/60">
+          <div className="mt-8 overflow-hidden rounded-xl border border-slate-200/70 bg-white/80 shadow-sm dark:border-slate-800/70 dark:bg-slate-900/60">
             <div className="grid grid-cols-1 gap-4 border-b border-slate-200/70 bg-slate-50/80 px-5 py-4 text-xs font-semibold text-slate-500 dark:border-slate-800/70 dark:bg-slate-900/60 dark:text-slate-300 md:grid-cols-[1.6fr_1.2fr_1fr_0.7fr_0.7fr_1.2fr_1fr_0.6fr]">
               <span>Name</span>
               <span>CIDR</span>
@@ -349,10 +355,7 @@ const Networks = () => {
                   const isIpv6 = network.is_ipv6 ?? network.cidr.includes(':')
                   const ipVersionKey = isIpv6 ? 'ipv6' : 'ipv4'
 
-                  const handleRowClick = () => {
-                    navigate(`/networks/${network.id}`)
-                  }
-
+                  const handleRowClick = () => navigate(`/networks/${network.id}`)
                   const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
                     if (event.key === 'Enter' || event.key === ' ') {
                       event.preventDefault()
@@ -379,13 +382,12 @@ const Networks = () => {
                       </div>
                       <div className="flex flex-wrap items-center gap-2 text-slate-600 dark:text-slate-300">
                         <span>{network.cidr}</span>
-                        <span
-                          className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-semibold tracking-wide ${
-                            ipVersionStyles[ipVersionKey]
-                          }`}
+                        <Badge
+                          colorClasses={ipVersionStyles[ipVersionKey]}
+                          className="px-2 py-0.5 text-[11px]"
                         >
                           {ipVersionLabels[ipVersionKey]}
-                        </span>
+                        </Badge>
                       </div>
                       <div>
                         <p className="text-slate-700 dark:text-slate-200">
@@ -396,36 +398,38 @@ const Networks = () => {
                         </p>
                       </div>
                       <div className="flex items-center">
-                        <span
-                          className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-semibold tracking-wide ${
+                        <Badge
+                          colorClasses={
                             scannerTypeStyles[network.scanner_type] ?? scannerTypeStyles.masscan
-                          }`}
+                          }
+                          className="px-2 py-0.5"
                         >
                           {scannerTypeLabels[network.scanner_type] ?? 'Masscan'}
-                        </span>
+                        </Badge>
                       </div>
                       <div className="flex items-center">
-                        <span
-                          className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-semibold tracking-wide ${
+                        <Badge
+                          colorClasses={
                             scanProtocolStyles[network.scan_protocol] ?? scanProtocolStyles.tcp
-                          }`}
+                          }
+                          className="px-2 py-0.5"
                         >
                           {scanProtocolLabels[network.scan_protocol] ?? 'TCP'}
-                        </span>
+                        </Badge>
                       </div>
                       <div>
                         <p className="text-slate-700 dark:text-slate-200">{scanLabel}</p>
                         <p className="text-xs text-slate-500 dark:text-slate-400">{scanDetail}</p>
                       </div>
                       <div className="flex items-center">
-                        <span
-                          className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold tracking-wide ${
+                        <Badge
+                          colorClasses={
                             statusStyle ??
                             'border-slate-300/60 bg-slate-200/40 text-slate-600 dark:border-slate-600/60 dark:bg-slate-800/60 dark:text-slate-300'
-                          }`}
+                          }
                         >
                           {statusLabel}
-                        </span>
+                        </Badge>
                       </div>
                       <div className="text-right text-slate-900 dark:text-white">
                         {alertsQuery.isLoading ? '—' : alertCount}
@@ -436,274 +440,224 @@ const Networks = () => {
               )}
             </div>
           </div>
-        </div>
+        </Card>
       </section>
 
       {showCreate ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 px-4 py-8">
-          <div className="w-full max-w-xl rounded-3xl border border-slate-200/70 bg-white/95 p-6 shadow-2xl dark:border-slate-800/70 dark:bg-slate-950">
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-                  Create network
-                </p>
-                <h3 className="mt-2 font-display text-2xl text-slate-900 dark:text-white">
-                  Add a monitored range
-                </h3>
-              </div>
-              <button
-                type="button"
-                onClick={() => setShowCreate(false)}
-                className="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-600 transition hover:border-slate-300 hover:bg-slate-100 dark:border-slate-800 dark:text-slate-300 dark:hover:border-slate-700 dark:hover:bg-slate-900"
-              >
-                Close
-              </button>
+        <Modal maxWidth="max-w-xl">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                Create network
+              </p>
+              <h3 className="mt-2 font-display text-2xl text-slate-900 dark:text-white">
+                Add a monitored range
+              </h3>
+            </div>
+            <Button variant="secondary" onClick={() => setShowCreate(false)}>
+              Close
+            </Button>
+          </div>
+
+          <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
+            <div className="grid gap-4 md:grid-cols-2">
+              <label className="space-y-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
+                Name
+                <input
+                  type="text"
+                  required
+                  value={formValues.name}
+                  onChange={(e) => setFormValues((prev) => ({ ...prev, name: e.target.value }))}
+                  className={inputClass}
+                  placeholder="HQ perimeter"
+                />
+              </label>
+              <label className="space-y-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
+                CIDR range
+                <input
+                  type="text"
+                  required
+                  value={formValues.cidr}
+                  onChange={(e) => setFormValues((prev) => ({ ...prev, cidr: e.target.value }))}
+                  className={inputClass}
+                  placeholder="192.168.10.0/24 or 2001:db8::/32"
+                />
+              </label>
             </div>
 
-            <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
-              <div className="grid gap-4 md:grid-cols-2">
-                <label className="space-y-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
-                  Name
-                  <input
-                    type="text"
-                    required
-                    value={formValues.name}
-                    onChange={(event) =>
-                      setFormValues((prev) => ({
-                        ...prev,
-                        name: event.target.value,
-                      }))
-                    }
-                    className="w-full rounded-2xl border border-slate-200/70 bg-white px-4 py-2 text-sm font-medium text-slate-900 shadow-sm focus:border-cyan-400 focus:outline-none dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
-                    placeholder="HQ perimeter"
-                  />
-                </label>
-                <label className="space-y-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
-                  CIDR range
-                  <input
-                    type="text"
-                    required
-                    value={formValues.cidr}
-                    onChange={(event) =>
-                      setFormValues((prev) => ({
-                        ...prev,
-                        cidr: event.target.value,
-                      }))
-                    }
-                    className="w-full rounded-2xl border border-slate-200/70 bg-white px-4 py-2 text-sm font-medium text-slate-900 shadow-sm focus:border-cyan-400 focus:outline-none dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
-                    placeholder="192.168.10.0/24 or 2001:db8::/32"
-                  />
-                </label>
-              </div>
-
-              <div className="grid gap-4 md:grid-cols-2">
-                <label className="space-y-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
-                  Port specification
-                  <input
-                    type="text"
-                    required
-                    value={formValues.portSpec}
-                    onChange={(event) =>
-                      setFormValues((prev) => ({
-                        ...prev,
-                        portSpec: event.target.value,
-                      }))
-                    }
-                    className="w-full rounded-2xl border border-slate-200/70 bg-white px-4 py-2 text-sm font-medium text-slate-900 shadow-sm focus:border-cyan-400 focus:outline-none dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
-                    placeholder="80-443,8080,!88"
-                  />
-                </label>
-                <label className="space-y-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
-                  Scan rate (pps)
-                  <input
-                    type="number"
-                    min="1"
-                    value={formValues.scanRate}
-                    onChange={(event) =>
-                      setFormValues((prev) => ({
-                        ...prev,
-                        scanRate: event.target.value,
-                      }))
-                    }
-                    className="w-full rounded-2xl border border-slate-200/70 bg-white px-4 py-2 text-sm font-medium text-slate-900 shadow-sm focus:border-cyan-400 focus:outline-none dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
-                    placeholder="100"
-                  />
-                </label>
-              </div>
-              <div className="mt-4">
-                <ScanEstimateSummary
-                  cidr={formValues.cidr}
-                  portSpec={formValues.portSpec}
-                  scanRate={formValues.scanRate}
+            <div className="grid gap-4 md:grid-cols-2">
+              <label className="space-y-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
+                Port specification
+                <input
+                  type="text"
+                  required
+                  value={formValues.portSpec}
+                  onChange={(e) => setFormValues((prev) => ({ ...prev, portSpec: e.target.value }))}
+                  className={inputClass}
+                  placeholder="80-443,8080,!88"
                 />
-              </div>
+              </label>
+              <label className="space-y-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
+                Scan rate (pps)
+                <input
+                  type="number"
+                  min="1"
+                  value={formValues.scanRate}
+                  onChange={(e) => setFormValues((prev) => ({ ...prev, scanRate: e.target.value }))}
+                  className={inputClass}
+                  placeholder="100"
+                />
+              </label>
+            </div>
+            <div className="mt-4">
+              <ScanEstimateSummary
+                cidr={formValues.cidr}
+                portSpec={formValues.portSpec}
+                scanRate={formValues.scanRate}
+              />
+            </div>
 
-              <div className="grid gap-4 md:grid-cols-2">
-                <label className="space-y-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
-                  <span className="flex items-center gap-2">
-                    Max scan time (minutes)
-                    <span
-                      className="inline-flex h-4 w-4 items-center justify-center rounded-full border border-slate-300 text-[10px] font-bold text-slate-500 dark:border-slate-700 dark:text-slate-300"
-                      title="Maximum total time allowed for the scan before it is stopped."
-                    >
-                      ?
-                    </span>
-                  </span>
-                  <input
-                    type="number"
-                    required
-                    min="1"
-                    max="1440"
-                    value={formValues.scanTimeoutMinutes}
-                    onChange={(event) =>
-                      setFormValues((prev) => ({
-                        ...prev,
-                        scanTimeoutMinutes: event.target.value,
-                      }))
-                    }
-                    className="w-full rounded-2xl border border-slate-200/70 bg-white px-4 py-2 text-sm font-medium text-slate-900 shadow-sm focus:border-cyan-400 focus:outline-none dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
-                    placeholder="60"
-                  />
-                  <span className="text-[11px] font-medium text-slate-400 dark:text-slate-500">
-                    Total scan runtime limit
-                  </span>
-                </label>
-                <label className="space-y-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
-                  <span className="flex items-center gap-2">
-                    Port timeout (milliseconds)
-                    <span
-                      className="inline-flex h-4 w-4 items-center justify-center rounded-full border border-slate-300 text-[10px] font-bold text-slate-500 dark:border-slate-700 dark:text-slate-300"
-                      title="Maximum time to wait for a port response before moving on."
-                    >
-                      ?
-                    </span>
-                  </span>
-                  <input
-                    type="number"
-                    required
-                    min="100"
-                    max="30000"
-                    value={formValues.portTimeout}
-                    onChange={(event) =>
-                      setFormValues((prev) => ({
-                        ...prev,
-                        portTimeout: event.target.value,
-                      }))
-                    }
-                    className="w-full rounded-2xl border border-slate-200/70 bg-white px-4 py-2 text-sm font-medium text-slate-900 shadow-sm focus:border-cyan-400 focus:outline-none dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
-                    placeholder="1500"
-                  />
-                  <span className="text-[11px] font-medium text-slate-400 dark:text-slate-500">
-                    Range 100-30000 milliseconds
-                  </span>
-                </label>
-              </div>
-
-              <div className="grid gap-4 md:grid-cols-2">
-                <label className="space-y-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
-                  Scanner site
-                  <select
-                    required
-                    value={formValues.siteId}
-                    onChange={(event) =>
-                      setFormValues((prev) => ({
-                        ...prev,
-                        siteId: event.target.value,
-                      }))
-                    }
-                    className="w-full rounded-2xl border border-slate-200/70 bg-white px-4 py-2 text-sm font-medium text-slate-900 shadow-sm focus:border-cyan-400 focus:outline-none dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
+            <div className="grid gap-4 md:grid-cols-2">
+              <label className="space-y-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
+                <span className="flex items-center gap-2">
+                  Max scan time (minutes)
+                  <span
+                    className="inline-flex h-4 w-4 items-center justify-center rounded-full border border-slate-300 text-[10px] font-bold text-slate-500 dark:border-slate-700 dark:text-slate-300"
+                    title="Maximum total time allowed for the scan before it is stopped."
                   >
-                    <option value="" disabled>
-                      Select a site
+                    ?
+                  </span>
+                </span>
+                <input
+                  type="number"
+                  required
+                  min="1"
+                  max="1440"
+                  value={formValues.scanTimeoutMinutes}
+                  onChange={(e) =>
+                    setFormValues((prev) => ({ ...prev, scanTimeoutMinutes: e.target.value }))
+                  }
+                  className={inputClass}
+                  placeholder="60"
+                />
+                <span className="text-[11px] font-medium text-slate-400 dark:text-slate-500">
+                  Total scan runtime limit
+                </span>
+              </label>
+              <label className="space-y-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
+                <span className="flex items-center gap-2">
+                  Port timeout (milliseconds)
+                  <span
+                    className="inline-flex h-4 w-4 items-center justify-center rounded-full border border-slate-300 text-[10px] font-bold text-slate-500 dark:border-slate-700 dark:text-slate-300"
+                    title="Maximum time to wait for a port response before moving on."
+                  >
+                    ?
+                  </span>
+                </span>
+                <input
+                  type="number"
+                  required
+                  min="100"
+                  max="30000"
+                  value={formValues.portTimeout}
+                  onChange={(e) =>
+                    setFormValues((prev) => ({ ...prev, portTimeout: e.target.value }))
+                  }
+                  className={inputClass}
+                  placeholder="1500"
+                />
+                <span className="text-[11px] font-medium text-slate-400 dark:text-slate-500">
+                  Range 100-30000 milliseconds
+                </span>
+              </label>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-2">
+              <label className="space-y-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
+                Scanner site
+                <select
+                  required
+                  value={formValues.siteId}
+                  onChange={(e) => setFormValues((prev) => ({ ...prev, siteId: e.target.value }))}
+                  className={inputClass}
+                >
+                  <option value="" disabled>
+                    Select a site
+                  </option>
+                  {sitesQuery.data?.scanners.map((scanner) => (
+                    <option key={scanner.id} value={scanner.id}>
+                      {scanner.name}
                     </option>
-                    {sitesQuery.data?.scanners.map((scanner) => (
-                      <option key={scanner.id} value={scanner.id}>
-                        {scanner.name}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label className="space-y-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
-                  Cron schedule
-                  <input
-                    type="text"
-                    value={formValues.schedule}
-                    onChange={(event) =>
-                      setFormValues((prev) => ({
-                        ...prev,
-                        schedule: event.target.value,
-                      }))
-                    }
-                    className="w-full rounded-2xl border border-slate-200/70 bg-white px-4 py-2 text-sm font-medium text-slate-900 shadow-sm focus:border-cyan-400 focus:outline-none dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
-                    placeholder="0 * * * *"
-                  />
-                </label>
-              </div>
+                  ))}
+                </select>
+              </label>
+              <label className="space-y-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
+                Cron schedule
+                <input
+                  type="text"
+                  value={formValues.schedule}
+                  onChange={(e) => setFormValues((prev) => ({ ...prev, schedule: e.target.value }))}
+                  className={inputClass}
+                  placeholder="0 * * * *"
+                />
+              </label>
+            </div>
 
-              <div className="grid gap-4 md:grid-cols-2">
-                <label className="space-y-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
-                  Scanner type
-                  <select
-                    value={formValues.scannerType}
-                    onChange={(event) =>
-                      setFormValues((prev) => ({
-                        ...prev,
-                        scannerType: event.target.value as ScannerType,
-                      }))
-                    }
-                    className="w-full rounded-2xl border border-slate-200/70 bg-white px-4 py-2 text-sm font-medium text-slate-900 shadow-sm focus:border-cyan-400 focus:outline-none dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
-                  >
-                    <option value="masscan">Masscan</option>
-                    <option value="nmap">Nmap</option>
-                  </select>
-                </label>
-                <label className="space-y-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
-                  Scan protocol
-                  <select
-                    value={formValues.scanProtocol}
-                    onChange={(event) =>
-                      setFormValues((prev) => ({
-                        ...prev,
-                        scanProtocol: event.target.value as ScanProtocol,
-                      }))
-                    }
-                    className="w-full rounded-2xl border border-slate-200/70 bg-white px-4 py-2 text-sm font-medium text-slate-900 shadow-sm focus:border-cyan-400 focus:outline-none dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
-                  >
-                    <option value="tcp">TCP</option>
-                    <option value="udp">UDP</option>
-                    <option value="both">Both</option>
-                  </select>
-                  <span className="text-[11px] font-medium text-slate-400 dark:text-slate-500">
-                    UDP scans are slower and may produce less reliable results
-                  </span>
-                </label>
-              </div>
-
-              {formError ? (
-                <div className="rounded-2xl border border-rose-200/70 bg-rose-50/80 px-4 py-3 text-sm text-rose-700 dark:border-rose-500/40 dark:bg-rose-500/10 dark:text-rose-100">
-                  {formError}
-                </div>
-              ) : null}
-
-              <div className="flex flex-wrap items-center justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={() => setShowCreate(false)}
-                  className="rounded-full border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-600 transition hover:border-slate-300 hover:bg-slate-100 dark:border-slate-800 dark:text-slate-300 dark:hover:border-slate-700 dark:hover:bg-slate-900"
+            <div className="grid gap-4 md:grid-cols-2">
+              <label className="space-y-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
+                Scanner type
+                <select
+                  value={formValues.scannerType}
+                  onChange={(e) =>
+                    setFormValues((prev) => ({
+                      ...prev,
+                      scannerType: e.target.value as ScannerType,
+                    }))
+                  }
+                  className={inputClass}
                 >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={createNetworkMutation.isPending}
-                  className="rounded-full border border-slate-900 bg-slate-900 px-5 py-2 text-xs font-semibold text-white transition hover:-translate-y-0.5 hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-70 dark:border-white dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200"
+                  <option value="masscan">Masscan</option>
+                  <option value="nmap">Nmap</option>
+                </select>
+              </label>
+              <label className="space-y-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
+                Scan protocol
+                <select
+                  value={formValues.scanProtocol}
+                  onChange={(e) =>
+                    setFormValues((prev) => ({
+                      ...prev,
+                      scanProtocol: e.target.value as ScanProtocol,
+                    }))
+                  }
+                  className={inputClass}
                 >
-                  {createNetworkMutation.isPending ? 'Creating...' : 'Create network'}
-                </button>
+                  <option value="tcp">TCP</option>
+                  <option value="udp">UDP</option>
+                  <option value="both">Both</option>
+                </select>
+                <span className="text-[11px] font-medium text-slate-400 dark:text-slate-500">
+                  UDP scans are slower and may produce less reliable results
+                </span>
+              </label>
+            </div>
+
+            {formError ? (
+              <div className="rounded-xl border border-rose-200/70 bg-rose-50/80 px-4 py-3 text-sm text-rose-700 dark:border-rose-500/40 dark:bg-rose-500/10 dark:text-rose-100">
+                {formError}
               </div>
-            </form>
-          </div>
-        </div>
+            ) : null}
+
+            <div className="flex flex-wrap items-center justify-end gap-3">
+              <Button variant="secondary" type="button" onClick={() => setShowCreate(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={createNetworkMutation.isPending}>
+                {createNetworkMutation.isPending ? 'Creating...' : 'Create network'}
+              </Button>
+            </div>
+          </form>
+        </Modal>
       ) : null}
     </div>
   )
