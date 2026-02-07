@@ -382,210 +382,148 @@ const Scanners = () => {
       </section>
 
       {/* Create Scanner Modal */}
-      {showCreate ? (
-        <Modal>
-          <div className="flex items-start justify-between">
-            <div>
-              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-                Create scanner
-              </p>
-              <h3 className="mt-2 font-display text-2xl text-slate-900 dark:text-white">
-                Add a scanner location
-              </h3>
-            </div>
-            <Button variant="secondary" onClick={() => setShowCreate(false)}>
-              Close
+      <Modal open={showCreate} onClose={() => setShowCreate(false)} title="Add a scanner location" subtitle="Create scanner">
+        <form className="space-y-4" onSubmit={handleCreateSubmit}>
+          <label className="block space-y-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
+            Name
+            <input
+              type="text"
+              required
+              value={createForm.name}
+              onChange={(e) => setCreateForm((prev) => ({ ...prev, name: e.target.value }))}
+              className={inputClass}
+              placeholder="HQ Scanner"
+            />
+          </label>
+          <label className="block space-y-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
+            Description (optional)
+            <textarea
+              value={createForm.description}
+              onChange={(e) => setCreateForm((prev) => ({ ...prev, description: e.target.value }))}
+              className={inputClass}
+              placeholder="Main office scanner running on VM-01"
+              rows={3}
+            />
+          </label>
+          <ErrorBanner message={formError} />
+          <div className="flex flex-wrap items-center justify-end gap-3">
+            <Button variant="secondary" type="button" onClick={() => setShowCreate(false)}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={createScannerMutation.isPending}>
+              {createScannerMutation.isPending ? 'Creating...' : 'Create scanner'}
             </Button>
           </div>
-          <form className="mt-6 space-y-4" onSubmit={handleCreateSubmit}>
-            <label className="block space-y-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
-              Name
-              <input
-                type="text"
-                required
-                value={createForm.name}
-                onChange={(e) => setCreateForm((prev) => ({ ...prev, name: e.target.value }))}
-                className={inputClass}
-                placeholder="HQ Scanner"
-              />
-            </label>
-            <label className="block space-y-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
-              Description (optional)
-              <textarea
-                value={createForm.description}
-                onChange={(e) =>
-                  setCreateForm((prev) => ({ ...prev, description: e.target.value }))
-                }
-                className={inputClass}
-                placeholder="Main office scanner running on VM-01"
-                rows={3}
-              />
-            </label>
-            <ErrorBanner message={formError} />
-            <div className="flex flex-wrap items-center justify-end gap-3">
-              <Button variant="secondary" type="button" onClick={() => setShowCreate(false)}>
-                Cancel
-              </Button>
-              <Button type="submit" disabled={createScannerMutation.isPending}>
-                {createScannerMutation.isPending ? 'Creating...' : 'Create scanner'}
-              </Button>
-            </div>
-          </form>
-        </Modal>
-      ) : null}
+        </form>
+      </Modal>
 
       {/* Edit Scanner Modal */}
-      {showEdit && selectedScanner ? (
-        <Modal>
-          <div className="flex items-start justify-between">
-            <div>
-              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-                Edit scanner
-              </p>
-              <h3 className="mt-2 font-display text-2xl text-slate-900 dark:text-white">
-                Update {selectedScanner.name}
-              </h3>
-            </div>
-            <Button variant="secondary" onClick={() => setShowEdit(false)}>
-              Close
+      <Modal open={showEdit && !!selectedScanner} onClose={() => setShowEdit(false)} title={`Update ${selectedScanner?.name ?? ''}`} subtitle="Edit scanner">
+        <form className="space-y-4" onSubmit={handleEditSubmit}>
+          <label className="block space-y-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
+            Name
+            <input
+              type="text"
+              required
+              value={editForm.name}
+              onChange={(e) => setEditForm((prev) => ({ ...prev, name: e.target.value }))}
+              className={inputClass}
+            />
+          </label>
+          <label className="block space-y-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
+            Description (optional)
+            <textarea
+              value={editForm.description}
+              onChange={(e) => setEditForm((prev) => ({ ...prev, description: e.target.value }))}
+              className={inputClass}
+              rows={3}
+            />
+          </label>
+          <ErrorBanner message={formError} />
+          <div className="flex flex-wrap items-center justify-end gap-3">
+            <Button variant="secondary" type="button" onClick={() => setShowEdit(false)}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={updateScannerMutation.isPending}>
+              {updateScannerMutation.isPending ? 'Saving...' : 'Save changes'}
             </Button>
           </div>
-          <form className="mt-6 space-y-4" onSubmit={handleEditSubmit}>
-            <label className="block space-y-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
-              Name
-              <input
-                type="text"
-                required
-                value={editForm.name}
-                onChange={(e) => setEditForm((prev) => ({ ...prev, name: e.target.value }))}
-                className={inputClass}
-              />
-            </label>
-            <label className="block space-y-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
-              Description (optional)
-              <textarea
-                value={editForm.description}
-                onChange={(e) => setEditForm((prev) => ({ ...prev, description: e.target.value }))}
-                className={inputClass}
-                rows={3}
-              />
-            </label>
-            <ErrorBanner message={formError} />
-            <div className="flex flex-wrap items-center justify-end gap-3">
-              <Button variant="secondary" type="button" onClick={() => setShowEdit(false)}>
-                Cancel
-              </Button>
-              <Button type="submit" disabled={updateScannerMutation.isPending}>
-                {updateScannerMutation.isPending ? 'Saving...' : 'Save changes'}
-              </Button>
-            </div>
-          </form>
-        </Modal>
-      ) : null}
+        </form>
+      </Modal>
 
       {/* Delete Confirmation Modal */}
-      {showDelete && selectedScanner ? (
-        <Modal maxWidth="max-w-md">
-          <div>
-            <p className="text-xs font-semibold text-rose-500 dark:text-rose-400">
-              Confirm deletion
-            </p>
-            <h3 className="mt-2 font-display text-2xl text-slate-900 dark:text-white">
-              Delete {selectedScanner.name}?
-            </h3>
-            <p className="mt-3 text-sm text-slate-600 dark:text-slate-300">
-              This action cannot be undone. All networks assigned to this scanner will also be
-              deleted along with their scan history.
-            </p>
-          </div>
-          <ErrorBanner message={formError} />
-          <div className="mt-6 flex flex-wrap items-center justify-end gap-3">
-            <Button variant="secondary" onClick={() => setShowDelete(false)}>
-              Cancel
-            </Button>
-            <Button
-              variant="danger"
-              onClick={handleDeleteConfirm}
-              disabled={deleteScannerMutation.isPending}
-            >
-              {deleteScannerMutation.isPending ? 'Deleting...' : 'Delete scanner'}
-            </Button>
-          </div>
-        </Modal>
-      ) : null}
+      <Modal open={showDelete && !!selectedScanner} onClose={() => setShowDelete(false)} title={`Delete ${selectedScanner?.name ?? ''}?`} subtitle="Confirm deletion" maxWidth="max-w-md">
+        <p className="text-sm text-slate-600 dark:text-slate-300">
+          This action cannot be undone. All networks assigned to this scanner will also be
+          deleted along with their scan history.
+        </p>
+        <ErrorBanner message={formError} />
+        <div className="mt-6 flex flex-wrap items-center justify-end gap-3">
+          <Button variant="secondary" onClick={() => setShowDelete(false)}>
+            Cancel
+          </Button>
+          <Button
+            variant="danger"
+            onClick={handleDeleteConfirm}
+            disabled={deleteScannerMutation.isPending}
+          >
+            {deleteScannerMutation.isPending ? 'Deleting...' : 'Delete scanner'}
+          </Button>
+        </div>
+      </Modal>
 
       {/* Regenerate API Key Confirmation Modal */}
-      {showRegenerate && selectedScanner ? (
-        <Modal maxWidth="max-w-md">
-          <div>
-            <p className="text-xs font-semibold text-amber-500 dark:text-amber-400">
-              Regenerate API key
-            </p>
-            <h3 className="mt-2 font-display text-2xl text-slate-900 dark:text-white">
-              Generate new key for {selectedScanner.name}?
-            </h3>
-            <p className="mt-3 text-sm text-slate-600 dark:text-slate-300">
-              The old API key will be immediately invalidated. You will need to update the scanner
-              configuration with the new key.
-            </p>
-          </div>
-          <ErrorBanner message={formError} />
-          <div className="mt-6 flex flex-wrap items-center justify-end gap-3">
-            <Button variant="secondary" onClick={() => setShowRegenerate(false)}>
-              Cancel
-            </Button>
-            <button
-              type="button"
-              onClick={handleRegenerateConfirm}
-              disabled={regenerateKeyMutation.isPending}
-              className="rounded-full border border-amber-600 bg-amber-600 px-5 py-2 text-xs font-semibold text-white transition hover:-translate-y-0.5 hover:bg-amber-700 disabled:cursor-not-allowed disabled:opacity-70"
-            >
-              {regenerateKeyMutation.isPending ? 'Generating...' : 'Regenerate key'}
-            </button>
-          </div>
-        </Modal>
-      ) : null}
+      <Modal open={showRegenerate && !!selectedScanner} onClose={() => setShowRegenerate(false)} title={`Generate new key for ${selectedScanner?.name ?? ''}?`} subtitle="Regenerate API key" maxWidth="max-w-md">
+        <p className="text-sm text-slate-600 dark:text-slate-300">
+          The old API key will be immediately invalidated. You will need to update the scanner
+          configuration with the new key.
+        </p>
+        <ErrorBanner message={formError} />
+        <div className="mt-6 flex flex-wrap items-center justify-end gap-3">
+          <Button variant="secondary" onClick={() => setShowRegenerate(false)}>
+            Cancel
+          </Button>
+          <button
+            type="button"
+            onClick={handleRegenerateConfirm}
+            disabled={regenerateKeyMutation.isPending}
+            className="rounded-full border border-amber-600 bg-amber-600 px-5 py-2 text-xs font-semibold text-white transition hover:-translate-y-0.5 hover:bg-amber-700 disabled:cursor-not-allowed disabled:opacity-70"
+          >
+            {regenerateKeyMutation.isPending ? 'Generating...' : 'Regenerate key'}
+          </button>
+        </div>
+      </Modal>
 
       {/* API Key Display Modal */}
-      {showApiKey && displayedApiKey ? (
-        <Modal>
-          <div>
-            <p className="text-xs font-semibold text-emerald-500 dark:text-emerald-400">
-              API key generated
-            </p>
-            <h3 className="mt-2 font-display text-2xl text-slate-900 dark:text-white">
-              Save this key now
-            </h3>
-            <p className="mt-3 text-sm text-slate-600 dark:text-slate-300">
-              This API key will only be shown once. Copy it now and store it securely. Use this
-              key in your scanner's environment configuration.
-            </p>
-          </div>
+      <Modal open={showApiKey && !!displayedApiKey} onClose={closeApiKeyModal} title="Save this key now" subtitle="API key generated">
+        <p className="text-sm text-slate-600 dark:text-slate-300">
+          This API key will only be shown once. Copy it now and store it securely. Use this
+          key in your scanner's environment configuration.
+        </p>
 
-          <div className="mt-4 rounded-xl border border-slate-200/70 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900">
-            <div className="flex items-center justify-between gap-3">
-              <code className="flex-1 break-all font-mono text-sm text-slate-900 dark:text-slate-100">
-                {displayedApiKey}
-              </code>
-              <button
-                type="button"
-                onClick={copyApiKey}
-                className={`flex-shrink-0 rounded-lg border px-3 py-1.5 text-xs font-semibold transition ${
-                  copySuccess
-                    ? 'border-emerald-300 bg-emerald-50 text-emerald-700 dark:border-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300'
-                    : 'border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:border-slate-600 dark:hover:bg-slate-800'
-                }`}
-              >
-                {copySuccess ? 'Copied!' : 'Copy'}
-              </button>
-            </div>
+        <div className="mt-4 rounded-xl border border-slate-200/70 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900">
+          <div className="flex items-center justify-between gap-3">
+            <code className="flex-1 break-all font-mono text-sm text-slate-900 dark:text-slate-100">
+              {displayedApiKey}
+            </code>
+            <button
+              type="button"
+              onClick={copyApiKey}
+              className={`flex-shrink-0 rounded-lg border px-3 py-1.5 text-xs font-semibold transition ${
+                copySuccess
+                  ? 'border-emerald-300 bg-emerald-50 text-emerald-700 dark:border-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300'
+                  : 'border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:border-slate-600 dark:hover:bg-slate-800'
+              }`}
+            >
+              {copySuccess ? 'Copied!' : 'Copy'}
+            </button>
           </div>
+        </div>
 
-          <div className="mt-6 flex items-center justify-end">
-            <Button onClick={closeApiKeyModal}>Done</Button>
-          </div>
-        </Modal>
-      ) : null}
+        <div className="mt-6 flex items-center justify-end">
+          <Button onClick={closeApiKeyModal}>Done</Button>
+        </div>
+      </Modal>
     </div>
   )
 }

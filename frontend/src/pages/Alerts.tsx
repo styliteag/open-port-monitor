@@ -470,34 +470,13 @@ const Alerts = () => {
         </Card>
       </section>
 
-      {actionModal && (
-        <Modal maxWidth="max-w-md">
-          <div className="mb-4 flex items-start justify-between">
-            <div>
-              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-                Resolve Alert
-              </p>
-              <h3 className="mt-1 text-lg font-semibold text-slate-900 dark:text-white">
-                {actionModal.alert.ip}:{actionModal.alert.port}
-              </h3>
-            </div>
-            <button
-              onClick={() => {
-                setActionModal(null)
-                setWhitelistReason('')
-              }}
-              className="rounded-full p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800"
-            >
-              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            </button>
-          </div>
+      <Modal
+        open={!!actionModal}
+        onClose={() => { setActionModal(null); setWhitelistReason('') }}
+        title={actionModal ? `${actionModal.alert.ip}:${actionModal.alert.port}` : ''}
+        subtitle="Resolve Alert"
+        maxWidth="max-w-md"
+      >
           <div className="mb-6 space-y-2">
             <label className="ml-1 text-[10px] font-black uppercase tracking-widest text-slate-400">
               Justification / Reason
@@ -569,8 +548,7 @@ const Alerts = () => {
               </div>
             </button>
           </div>
-        </Modal>
-      )}
+      </Modal>
     </div>
   )
 }

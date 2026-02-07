@@ -443,23 +443,14 @@ const Networks = () => {
         </Card>
       </section>
 
-      {showCreate ? (
-        <Modal maxWidth="max-w-xl">
-          <div className="flex items-start justify-between">
-            <div>
-              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-                Create network
-              </p>
-              <h3 className="mt-2 font-display text-2xl text-slate-900 dark:text-white">
-                Add a monitored range
-              </h3>
-            </div>
-            <Button variant="secondary" onClick={() => setShowCreate(false)}>
-              Close
-            </Button>
-          </div>
-
-          <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
+      <Modal
+        open={showCreate}
+        onClose={() => setShowCreate(false)}
+        title="Add a monitored range"
+        subtitle="Create network"
+        maxWidth="max-w-xl"
+      >
+          <form className="space-y-4" onSubmit={handleSubmit}>
             <div className="grid gap-4 md:grid-cols-2">
               <label className="space-y-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
                 Name
@@ -657,8 +648,7 @@ const Networks = () => {
               </Button>
             </div>
           </form>
-        </Modal>
-      ) : null}
+      </Modal>
     </div>
   )
 }
