@@ -6,29 +6,24 @@ Full conventions, architecture, patterns: @AGENTS.md
 
 ## Commands
 
+Use `just` (see `justfile` in root). Common recipes:
+
 ```bash
-# Dev environment
-docker compose -f compose-dev.yml up --build
+just dev-up          # start dev stack (compose-dev.yml)
+just dev-down
+just dev-logs
 
-# GVM scanner (optional, requires main stack running + API key)
-docker compose -f compose-gvm.yml up -d
+just backend-check   # mypy + ruff + pytest
+just frontend-check  # typecheck + lint + test
+just check           # both stacks
 
-# Backend (from backend/)
-cd backend && uv run --extra dev mypy src/
-cd backend && uv run ruff check src/
-cd backend && uv run --extra dev pytest
+just migrate "desc"  # alembic autogenerate migration
+just gvm-up          # start GVM stack (optional)
 
-# Frontend (from frontend/)
-cd frontend && npm run typecheck
-cd frontend && npm run lint
-cd frontend && npm run build
-cd frontend && npm run test
-
-# Alembic migration
-docker exec opm-backend uv run alembic revision --autogenerate -m "desc"
+just release patch   # bump version, tag, push
 ```
 
-**Do NOT use `npx tsc`** — fails. Use `npm run typecheck` or `npm run build`.
+**Do NOT use `npx tsc`** — fails. Use `npm run typecheck` or `just frontend-typecheck`.
 
 ## Commit Format
 

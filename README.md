@@ -48,6 +48,8 @@ Distributed network port scanning and monitoring system for security purposes wi
 
 3. Start the development environment:
    ```bash
+   just dev-up
+   # or without just:
    docker compose -f compose-dev.yml up --build
    ```
 
@@ -78,62 +80,26 @@ Changes to source files will automatically trigger reloads.
 
 ### Running Tests
 
-#### Backend Tests
-
-The backend has a comprehensive test suite using pytest with async support.
+Run everything with `just`:
 
 ```bash
-cd backend
-
-# Install dev dependencies (if not already installed)
-uv pip install -e ".[dev]"
-
-# Run all tests
-.venv/bin/pytest tests/ -v
-
-# Run specific test file
-.venv/bin/pytest tests/test_auth.py -v
-
-# Run with coverage
-.venv/bin/pytest tests/ --cov=app --cov-report=term-missing
+just check           # backend + frontend (lint, typecheck, tests)
+just backend-check   # mypy + ruff + pytest
+just frontend-check  # typecheck + lint + vitest
 ```
 
-Test categories:
-- `test_security.py` - Password hashing, JWT token handling
-- `test_auth.py` - Authentication endpoints
-- `test_users.py` - User management
-- `test_networks.py` - Network CRUD operations
-- `test_scans.py` - Scan lifecycle management
-- `test_alerts.py` - Alert operations
-
-#### Frontend Tests
-
-The frontend uses Vitest with React Testing Library.
+Or individually:
 
 ```bash
-cd frontend
+# Backend
+cd backend && uv run --extra dev pytest tests/ -v
+cd backend && uv run --extra dev pytest tests/test_auth.py -v
 
-# Install dependencies (if not already installed)
-npm install
-
-# Run all tests
-npm test
-
-# Run tests in watch mode
-npm run test:watch
-
-# Run with coverage
-npm run test:coverage
+# Frontend
+cd frontend && npm test
+cd frontend && npm run test:watch
+cd frontend && npm run test:coverage
 ```
-
-Test categories:
-- `api.test.ts` - API utilities, error handling, fetch wrapper
-- `scanEstimate.test.ts` - Scan estimation calculations (CIDR parsing, port counts)
-- `scanLogs.test.ts` - Log formatting and date parsing utilities
-- `formatRelativeTime.test.ts` - Relative time formatting (e.g., "5m ago")
-- `ThemeContext.test.tsx` - Theme provider, localStorage persistence
-- `AuthContext.test.tsx` - Authentication hook, login/logout flows
-- `ProtectedRoute.test.tsx` - Route guard component
 
 ### Environment Variables
 
