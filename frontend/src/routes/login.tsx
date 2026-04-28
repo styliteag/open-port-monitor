@@ -34,6 +34,11 @@ function LoginPage() {
         <CardContent className="space-y-4">
           <LoginForm />
           <DevLoginButton />
+          <p className="pt-2 text-center text-xs text-muted-foreground">
+            Authorized use only. Activity on this system is logged and
+            monitored. By signing in you agree to scan only networks and
+            hosts you are explicitly permitted to assess.
+          </p>
         </CardContent>
       </Card>
     </div>

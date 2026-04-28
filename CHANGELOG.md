@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Frontend**: new `/settings/security` page with an in-page 2FA enrollment wizard (password reauth → QR code via `qrcode.react` + manual-entry secret → 10 plaintext backup codes shown once with text-file download), plus a manage panel to regenerate backup codes or disable 2FA. The login form now handles the two-step flow: when the backend requires 2FA the form switches to a one-time-code input that accepts both the 6-digit TOTP and a backup code. The email badge in the header links to `/settings/security`.
 - **Backend**: `/api/auth/me` now exposes `totp_enabled` and `backup_codes_remaining`. 2FA verify step is rate-limited to 5 attempts / 60s per user (stricter than the per-IP login limit).
 - **Admin**: User edit page at `/admin/users/:id` — edit email, role, password, and active status inline. Shows a 2FA status badge per user in the user list and on the edit page; admins can reset another user's 2FA (disabled for self — redirects to `/settings/security`). `UserResponse` now includes `totp_enabled`.
+- **Frontend**: Authorized-use disclaimer on the login page reminding users that activity is logged and that scanning is restricted to permitted networks and hosts.
 
 ### Security
 
