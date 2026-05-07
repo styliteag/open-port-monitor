@@ -58,7 +58,7 @@ export default defineConfig({
   server: {
     host: "0.0.0.0",
     port: 5173,
-    allowedHosts: [".trycloudflare.com"],
+    allowedHosts: [".trycloudflare.com",".tun.stylite-live.net"],
     proxy: {
       "/api": {
         target: process.env.DOCKER
