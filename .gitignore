@@ -68,3 +68,9 @@ scripts/ralph/
 # Temporary files
 tmp/
 .understand-anything/
+# Added by code-review-graph
+.code-review-graph/
+.claude/skills/
+.agents/skills/mini-wiki
+.mini-wiki/
+skills-lock.json
