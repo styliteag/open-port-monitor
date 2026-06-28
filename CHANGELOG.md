@@ -15,6 +15,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Admin**: User edit page at `/admin/users/:id` — edit email, role, password, and active status inline. Shows a 2FA status badge per user in the user list and on the edit page; admins can reset another user's 2FA (disabled for self — redirects to `/settings/security`). `UserResponse` now includes `totp_enabled`.
 - **Frontend**: Authorized-use disclaimer on the login page reminding users that activity is logged and that scanning is restricted to permitted networks and hosts.
 
+### Changed
+
+- **License changed to the Business Source License 1.1 (BSL 1.1).**
+  STYLiTE Orbit Monitor is now *source-available*: the source stays public and you
+  may run it to scan/monitor your own organization's networks, but offering it to
+  third parties as a hosted / managed service or reselling it requires a commercial
+  license from STYLiTE. Each released version automatically converts to
+  GPL-3.0-or-later four years after its release. See [`LICENSE`](LICENSE) and
+  [`LICENSING.md`](LICENSING.md).
+
 ### Security
 
 - **Backend**: `get_current_user` is now an allow-list — rejects any JWT that carries a non-null `scope`. Previously only `scope="scanner"` tokens were rejected, which allowed a freshly-minted 2FA challenge token (`scope="2fa_challenge"`) to authenticate as the user and bypass the TOTP step entirely. The challenge token is also made single-use: a successful `/login/verify-2fa` bumps `token_version`, so the same challenge cannot be replayed within its 5-minute TTL. TOTP codes are additionally tracked via a new `totp_last_used_step` column so a captured code cannot be replayed within its ±90 s validity window. Self-service enrollment now requires a password confirmation on both `/2fa/enroll/start` and `/2fa/enroll/verify`, matching the existing pattern on disable/regenerate and preventing a hijacked bearer from silently binding a new authenticator to the victim's account.

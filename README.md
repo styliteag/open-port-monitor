@@ -311,4 +311,13 @@ For comprehensive documentation, see the [docs folder](docs/README.md):
 
 ## License
 
-MIT
+STYLiTE Orbit Monitor is **source-available** under the **Business Source
+License 1.1 (BSL 1.1)** — see [`LICENSE`](LICENSE) and [`LICENSING.md`](LICENSING.md).
+
+- ✅ Read, build, modify, and run it to scan/monitor your **own** organization's networks.
+- ❌ Offering it to third parties as a hosted / managed service, or reselling it,
+  needs a **commercial license** — contact `office@stylite.de`.
+- Each released version becomes **GPL-3.0-or-later** four years after its release.
+
+BSL is *not* an OSI-approved "Open Source" license; the correct term is
+*source-available*.
