@@ -27,6 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Frontend**: the admin user edit route is now regeneration-stable. `users.$userId.tsx` was renamed to `users_.$userId.tsx` so the TanStack route generator un-nests it from the `users` list route (which has no `<Outlet/>`); previously the checked-in `routeTree.gen.ts` was a stale flat tree that worked but would break `/admin/users/$userId` on any regeneration. URL is unchanged.
 - **Scanner**: cleared 4 pre-existing mypy errors and 1 ruff `E501` in the Greenbone path. `_cvss_to_label` now returns the `VulnerabilitySeverityLabel` literal and `SEVERITY_LABELS` is typed accordingly; `port_text` is coerced to `str` before `_parse_port`; `ElementTree.tostring(...)` and `json.loads(...)` results are `cast` to their declared types (`greenbone.py`, `greenbone_metadata.py`, `script_cache.py`); the nuclei submit log line is wrapped. No behavior change.
 
 ### Security

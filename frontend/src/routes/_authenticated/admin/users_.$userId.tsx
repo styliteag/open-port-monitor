@@ -24,7 +24,7 @@ import { useUser, useUserMutations } from "@/features/admin/hooks/useAdmin";
 import { useAuthStore } from "@/stores/auth.store";
 import type { UserRole } from "@/stores/auth.store";
 
-export const Route = createFileRoute("/_authenticated/admin/users/$userId")({
+export const Route = createFileRoute("/_authenticated/admin/users_/$userId")({
   component: UserEditPage,
 });
 

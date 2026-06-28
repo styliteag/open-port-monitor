@@ -29,7 +29,6 @@ import { Route as AuthenticatedNetworksNetworkIdRouteImport } from './routes/_au
 import { Route as AuthenticatedHostsHostIdRouteImport } from './routes/_authenticated/hosts/$hostId'
 import { Route as AuthenticatedAlertsAlertIdRouteImport } from './routes/_authenticated/alerts/$alertId'
 import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin/users'
-import { Route as AuthenticatedAdminUsersUserIdRouteImport } from './routes/_authenticated/admin/users.$userId'
 import { Route as AuthenticatedAdminSshAlertDefaultsRouteImport } from './routes/_authenticated/admin/ssh-alert-defaults'
 import { Route as AuthenticatedAdminSeverityRulesRouteImport } from './routes/_authenticated/admin/severity-rules'
 import { Route as AuthenticatedAdminRolesRouteImport } from './routes/_authenticated/admin/roles'
@@ -37,6 +36,7 @@ import { Route as AuthenticatedAdminOrganizationRouteImport } from './routes/_au
 import { Route as AuthenticatedAdminHostnameLookupRouteImport } from './routes/_authenticated/admin/hostname-lookup'
 import { Route as AuthenticatedAdminGvmLibraryRouteImport } from './routes/_authenticated/admin/gvm-library'
 import { Route as AuthenticatedNseEditorScriptNameRouteImport } from './routes/_authenticated/nse/editor.$scriptName'
+import { Route as AuthenticatedAdminUsersUserIdRouteImport } from './routes/_authenticated/admin/users_.$userId'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -147,12 +147,6 @@ const AuthenticatedAdminUsersRoute = AuthenticatedAdminUsersRouteImport.update({
   path: '/admin/users',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AuthenticatedAdminUsersUserIdRoute =
-  AuthenticatedAdminUsersUserIdRouteImport.update({
-    id: '/admin/users/$userId',
-    path: '/admin/users/$userId',
-    getParentRoute: () => AuthenticatedRoute,
-  } as any)
 const AuthenticatedAdminSshAlertDefaultsRoute =
   AuthenticatedAdminSshAlertDefaultsRouteImport.update({
     id: '/admin/ssh-alert-defaults',
@@ -194,6 +188,12 @@ const AuthenticatedNseEditorScriptNameRoute =
     path: '/nse/editor/$scriptName',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedAdminUsersUserIdRoute =
+  AuthenticatedAdminUsersUserIdRouteImport.update({
+    id: '/admin/users_/$userId',
+    path: '/admin/users/$userId',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
@@ -207,7 +207,6 @@ export interface FileRoutesByFullPath {
   '/admin/severity-rules': typeof AuthenticatedAdminSeverityRulesRoute
   '/admin/ssh-alert-defaults': typeof AuthenticatedAdminSshAlertDefaultsRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
-  '/admin/users/$userId': typeof AuthenticatedAdminUsersUserIdRoute
   '/alerts/$alertId': typeof AuthenticatedAlertsAlertIdRoute
   '/hosts/$hostId': typeof AuthenticatedHostsHostIdRoute
   '/networks/$networkId': typeof AuthenticatedNetworksNetworkIdRoute
@@ -222,6 +221,7 @@ export interface FileRoutesByFullPath {
   '/networks/': typeof AuthenticatedNetworksIndexRoute
   '/scanners/': typeof AuthenticatedScannersIndexRoute
   '/scans/': typeof AuthenticatedScansIndexRoute
+  '/admin/users/$userId': typeof AuthenticatedAdminUsersUserIdRoute
   '/nse/editor/$scriptName': typeof AuthenticatedNseEditorScriptNameRoute
 }
 export interface FileRoutesByTo {
@@ -236,7 +236,6 @@ export interface FileRoutesByTo {
   '/admin/severity-rules': typeof AuthenticatedAdminSeverityRulesRoute
   '/admin/ssh-alert-defaults': typeof AuthenticatedAdminSshAlertDefaultsRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
-  '/admin/users/$userId': typeof AuthenticatedAdminUsersUserIdRoute
   '/alerts/$alertId': typeof AuthenticatedAlertsAlertIdRoute
   '/hosts/$hostId': typeof AuthenticatedHostsHostIdRoute
   '/networks/$networkId': typeof AuthenticatedNetworksNetworkIdRoute
@@ -251,6 +250,7 @@ export interface FileRoutesByTo {
   '/networks': typeof AuthenticatedNetworksIndexRoute
   '/scanners': typeof AuthenticatedScannersIndexRoute
   '/scans': typeof AuthenticatedScansIndexRoute
+  '/admin/users/$userId': typeof AuthenticatedAdminUsersUserIdRoute
   '/nse/editor/$scriptName': typeof AuthenticatedNseEditorScriptNameRoute
 }
 export interface FileRoutesById {
@@ -267,7 +267,6 @@ export interface FileRoutesById {
   '/_authenticated/admin/severity-rules': typeof AuthenticatedAdminSeverityRulesRoute
   '/_authenticated/admin/ssh-alert-defaults': typeof AuthenticatedAdminSshAlertDefaultsRoute
   '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
-  '/_authenticated/admin/users/$userId': typeof AuthenticatedAdminUsersUserIdRoute
   '/_authenticated/alerts/$alertId': typeof AuthenticatedAlertsAlertIdRoute
   '/_authenticated/hosts/$hostId': typeof AuthenticatedHostsHostIdRoute
   '/_authenticated/networks/$networkId': typeof AuthenticatedNetworksNetworkIdRoute
@@ -282,6 +281,7 @@ export interface FileRoutesById {
   '/_authenticated/networks/': typeof AuthenticatedNetworksIndexRoute
   '/_authenticated/scanners/': typeof AuthenticatedScannersIndexRoute
   '/_authenticated/scans/': typeof AuthenticatedScansIndexRoute
+  '/_authenticated/admin/users_/$userId': typeof AuthenticatedAdminUsersUserIdRoute
   '/_authenticated/nse/editor/$scriptName': typeof AuthenticatedNseEditorScriptNameRoute
 }
 export interface FileRouteTypes {
@@ -298,7 +298,6 @@ export interface FileRouteTypes {
     | '/admin/severity-rules'
     | '/admin/ssh-alert-defaults'
     | '/admin/users'
-    | '/admin/users/$userId'
     | '/alerts/$alertId'
     | '/hosts/$hostId'
     | '/networks/$networkId'
@@ -313,6 +312,7 @@ export interface FileRouteTypes {
     | '/networks/'
     | '/scanners/'
     | '/scans/'
+    | '/admin/users/$userId'
     | '/nse/editor/$scriptName'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -327,7 +327,6 @@ export interface FileRouteTypes {
     | '/admin/severity-rules'
     | '/admin/ssh-alert-defaults'
     | '/admin/users'
-    | '/admin/users/$userId'
     | '/alerts/$alertId'
     | '/hosts/$hostId'
     | '/networks/$networkId'
@@ -342,6 +341,7 @@ export interface FileRouteTypes {
     | '/networks'
     | '/scanners'
     | '/scans'
+    | '/admin/users/$userId'
     | '/nse/editor/$scriptName'
   id:
     | '__root__'
@@ -357,7 +357,6 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/severity-rules'
     | '/_authenticated/admin/ssh-alert-defaults'
     | '/_authenticated/admin/users'
-    | '/_authenticated/admin/users/$userId'
     | '/_authenticated/alerts/$alertId'
     | '/_authenticated/hosts/$hostId'
     | '/_authenticated/networks/$networkId'
@@ -372,6 +371,7 @@ export interface FileRouteTypes {
     | '/_authenticated/networks/'
     | '/_authenticated/scanners/'
     | '/_authenticated/scans/'
+    | '/_authenticated/admin/users_/$userId'
     | '/_authenticated/nse/editor/$scriptName'
   fileRoutesById: FileRoutesById
 }
@@ -522,13 +522,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminUsersRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/admin/users/$userId': {
-      id: '/_authenticated/admin/users/$userId'
-      path: '/admin/users/$userId'
-      fullPath: '/admin/users/$userId'
-      preLoaderRoute: typeof AuthenticatedAdminUsersUserIdRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
     '/_authenticated/admin/ssh-alert-defaults': {
       id: '/_authenticated/admin/ssh-alert-defaults'
       path: '/admin/ssh-alert-defaults'
@@ -578,6 +571,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedNseEditorScriptNameRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/admin/users_/$userId': {
+      id: '/_authenticated/admin/users_/$userId'
+      path: '/admin/users/$userId'
+      fullPath: '/admin/users/$userId'
+      preLoaderRoute: typeof AuthenticatedAdminUsersUserIdRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
   }
 }
 
@@ -592,7 +592,6 @@ interface AuthenticatedRouteChildren {
   AuthenticatedAdminSeverityRulesRoute: typeof AuthenticatedAdminSeverityRulesRoute
   AuthenticatedAdminSshAlertDefaultsRoute: typeof AuthenticatedAdminSshAlertDefaultsRoute
   AuthenticatedAdminUsersRoute: typeof AuthenticatedAdminUsersRoute
-  AuthenticatedAdminUsersUserIdRoute: typeof AuthenticatedAdminUsersUserIdRoute
   AuthenticatedAlertsAlertIdRoute: typeof AuthenticatedAlertsAlertIdRoute
   AuthenticatedHostsHostIdRoute: typeof AuthenticatedHostsHostIdRoute
   AuthenticatedNetworksNetworkIdRoute: typeof AuthenticatedNetworksNetworkIdRoute
@@ -607,6 +606,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedNetworksIndexRoute: typeof AuthenticatedNetworksIndexRoute
   AuthenticatedScannersIndexRoute: typeof AuthenticatedScannersIndexRoute
   AuthenticatedScansIndexRoute: typeof AuthenticatedScansIndexRoute
+  AuthenticatedAdminUsersUserIdRoute: typeof AuthenticatedAdminUsersUserIdRoute
   AuthenticatedNseEditorScriptNameRoute: typeof AuthenticatedNseEditorScriptNameRoute
 }
 
@@ -622,7 +622,6 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAdminSshAlertDefaultsRoute:
     AuthenticatedAdminSshAlertDefaultsRoute,
   AuthenticatedAdminUsersRoute: AuthenticatedAdminUsersRoute,
-  AuthenticatedAdminUsersUserIdRoute: AuthenticatedAdminUsersUserIdRoute,
   AuthenticatedAlertsAlertIdRoute: AuthenticatedAlertsAlertIdRoute,
   AuthenticatedHostsHostIdRoute: AuthenticatedHostsHostIdRoute,
   AuthenticatedNetworksNetworkIdRoute: AuthenticatedNetworksNetworkIdRoute,
@@ -637,6 +636,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedNetworksIndexRoute: AuthenticatedNetworksIndexRoute,
   AuthenticatedScannersIndexRoute: AuthenticatedScannersIndexRoute,
   AuthenticatedScansIndexRoute: AuthenticatedScansIndexRoute,
+  AuthenticatedAdminUsersUserIdRoute: AuthenticatedAdminUsersUserIdRoute,
   AuthenticatedNseEditorScriptNameRoute: AuthenticatedNseEditorScriptNameRoute,
 }
 
