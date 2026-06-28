@@ -25,8 +25,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   GPL-3.0-or-later four years after its release. See [`LICENSE`](LICENSE) and
   [`LICENSING.md`](LICENSING.md).
 
+### Fixed
+
+- **Scanner**: cleared 4 pre-existing mypy errors and 1 ruff `E501` in the Greenbone path. `_cvss_to_label` now returns the `VulnerabilitySeverityLabel` literal and `SEVERITY_LABELS` is typed accordingly; `port_text` is coerced to `str` before `_parse_port`; `ElementTree.tostring(...)` and `json.loads(...)` results are `cast` to their declared types (`greenbone.py`, `greenbone_metadata.py`, `script_cache.py`); the nuclei submit log line is wrapped. No behavior change.
+
 ### Security
 
+- **Dependencies**: remediated Dependabot advisories across all three stacks (15 high / 33 moderate / 11 low). Backend (pip): `PyJWT` 2.12→2.13, `python-multipart` 0.0.22→0.0.32, `starlette` 0.50→1.3.1 (carried by `fastapi` 0.128→0.138.1), `Mako` 1.3.10→1.3.12, `idna` 3.11→3.18, `pydantic-settings`→2.14.2, `python-dotenv`→1.2.2. Scanner (pip): `cryptography` 46→49, `lxml` 6.0.3→6.1.1, plus `idna`/`pydantic-settings`/`python-dotenv`. Frontend (npm): `npm audit fix` + `brace-expansion` override→5.0.6 (vite→8.1.0, hono/undici/fast-uri/postcss/qs/js-yaml/babel) — all dev/build-time deps, not shipped in the production bundle. Upgrades were kept targeted (security only); unrelated tooling was left untouched. Two low, dev-only, transitive advisories with no compatible patch are accepted and tracked: `paramiko` (via `python-gvm`, not directly imported) and `esbuild` (pinned by vite 8.1.0).
 - **Backend**: `get_current_user` is now an allow-list — rejects any JWT that carries a non-null `scope`. Previously only `scope="scanner"` tokens were rejected, which allowed a freshly-minted 2FA challenge token (`scope="2fa_challenge"`) to authenticate as the user and bypass the TOTP step entirely. The challenge token is also made single-use: a successful `/login/verify-2fa` bumps `token_version`, so the same challenge cannot be replayed within its 5-minute TTL. TOTP codes are additionally tracked via a new `totp_last_used_step` column so a captured code cannot be replayed within its ±90 s validity window. Self-service enrollment now requires a password confirmation on both `/2fa/enroll/start` and `/2fa/enroll/verify`, matching the existing pattern on disable/regenerate and preventing a hijacked bearer from silently binding a new authenticator to the victim's account.
 
 ### Known issues

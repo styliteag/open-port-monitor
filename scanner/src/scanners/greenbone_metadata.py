@@ -5,7 +5,7 @@ from __future__ import annotations
 import hashlib
 import logging
 import re
-from typing import Any
+from typing import Any, cast
 from xml.etree import ElementTree
 
 _OPM_HASH_MARKER_RE = re.compile(r"\[OPM:hash=([0-9a-f]{64})\]")
@@ -55,7 +55,7 @@ def inject_opm_hash(xml_bytes: bytes, new_hash: str) -> bytes:
         stripped = _OPM_HASH_MARKER_RE.sub("", existing).rstrip()
         comment.text = (stripped + "\n" + marker) if stripped else marker
 
-    return ElementTree.tostring(tree, encoding="utf-8")
+    return cast(bytes, ElementTree.tostring(tree, encoding="utf-8"))
 
 
 def _parse_entries(

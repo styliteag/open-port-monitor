@@ -378,7 +378,12 @@ def _run_nuclei_phase(
             vulnerabilities=findings,
             status=vuln_status,
         )
-        logger.info("nuclei: submitted %d finding(s) for scan %s (status=%s)", len(findings), scan_id, vuln_status)
+        logger.info(
+            "nuclei: submitted %d finding(s) for scan %s (status=%s)",
+            len(findings),
+            scan_id,
+            vuln_status,
+        )
     except Exception:
         logger.exception("nuclei: failed to submit results for scan %s", scan_id)
 

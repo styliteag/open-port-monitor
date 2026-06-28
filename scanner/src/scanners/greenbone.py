@@ -11,7 +11,11 @@ from typing import Any
 from xml.etree import ElementTree
 
 from src.client import ScannerClient
-from src.models import OpenPortResult, VulnerabilityResult
+from src.models import (
+    OpenPortResult,
+    VulnerabilityResult,
+    VulnerabilitySeverityLabel,
+)
 from src.threading_utils import ProgressReporter
 
 # GVM poll interval in seconds (keep >= 30 to avoid overloading gvmd)
@@ -25,7 +29,7 @@ _FALLBACK_CONFIG_IDS: dict[str, str] = {
     "System Discovery": "bbca7412-a950-11e3-9109-406186ea4fc5",
 }
 
-SEVERITY_LABELS = {
+SEVERITY_LABELS: dict[tuple[float, float], VulnerabilitySeverityLabel] = {
     (9.0, 10.0): "critical",
     (7.0, 8.9): "high",
     (4.0, 6.9): "medium",
@@ -34,7 +38,7 @@ SEVERITY_LABELS = {
 }
 
 
-def _cvss_to_label(score: float) -> str:
+def _cvss_to_label(score: float) -> VulnerabilitySeverityLabel:
     """Convert CVSS score to severity label."""
     for (low, high), label in SEVERITY_LABELS.items():
         if low <= score <= high:
@@ -346,7 +350,7 @@ class GreenboneScanner:
             severity_label = _cvss_to_label(severity)
 
             # Parse port
-            port_text = port_elem.text if port_elem is not None else ""
+            port_text = (port_elem.text or "") if port_elem is not None else ""
             port, protocol = self._parse_port(port_text)
 
             # Extract CVEs from NVT refs and description

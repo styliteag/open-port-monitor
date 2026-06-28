@@ -7,7 +7,7 @@ import logging
 import os
 import tempfile
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 if TYPE_CHECKING:
     from src.client import ScannerClient
@@ -23,7 +23,7 @@ def _load_local_hashes() -> dict[str, str]:
     if not HASHES_FILE.is_file():
         return {}
     try:
-        return json.loads(HASHES_FILE.read_text(encoding="utf-8"))
+        return cast(dict[str, str], json.loads(HASHES_FILE.read_text(encoding="utf-8")))
     except (json.JSONDecodeError, OSError):
         return {}
 
