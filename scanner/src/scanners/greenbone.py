@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: BUSL-1.1 OR GPL-3.0-or-later
+# This module imports python-gvm (GPL-3.0-or-later). It is dual-licensed so the
+# combined opm-scanner-gvm image is GPL-compliant. See scanner/LICENSE-GVM.md.
 """Greenbone (GVM) scanner bridge via python-gvm GMP protocol."""
 
 from __future__ import annotations

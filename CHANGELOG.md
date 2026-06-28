@@ -15,6 +15,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Admin**: User edit page at `/admin/users/:id` — edit email, role, password, and active status inline. Shows a 2FA status badge per user in the user list and on the edit page; admins can reset another user's 2FA (disabled for self — redirects to `/settings/security`). `UserResponse` now includes `totp_enabled`.
 - **Frontend**: Authorized-use disclaimer on the login page reminding users that activity is logged and that scanning is restricted to permitted networks and hosts.
 
+- **Compliance**: third-party license inventory. `THIRD-PARTY-NOTICES.md` summarizes dependency licenses and the copyleft analysis; machine-readable CycloneDX SBOMs under `sbom/` (backend, scanner-python, frontend, scanner-image OS layer). The standard scanner bundles `masscan` (AGPL-3.0) and `nmap` (GPLv2-with-clarifications) as subprocesses (aggregation) plus `nuclei` (MIT); the Greenbone server (AGPL) is not redistributed.
+- **Licensing**: the GVM scanner agent is dual-licensed `BUSL-1.1 OR GPL-3.0-or-later` because it links `python-gvm` (GPL-3.0). SPDX headers on `scanner/src/scanners/greenbone.py` and `greenbone_metadata.py`; rationale and the image-level GPL offer in `scanner/LICENSE-GVM.md`; full text in `scanner/COPYING.GPL-3.0`. The standard scanner, backend, frontend, and combined app remain BSL-1.1.
+
 ### Changed
 
 - **License changed to the Business Source License 1.1 (BSL 1.1).**

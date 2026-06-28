@@ -1,3 +1,7 @@
+# SPDX-License-Identifier: BUSL-1.1 OR GPL-3.0-or-later
+# This module supports the GVM agent that imports python-gvm (GPL-3.0-or-later).
+# Dual-licensed so the combined opm-scanner-gvm image is GPL-compliant.
+# See scanner/LICENSE-GVM.md.
 """GVM metadata snapshot: fetch scan configs + port lists, parse OPM hash marker."""
 
 from __future__ import annotations

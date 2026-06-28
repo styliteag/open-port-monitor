@@ -75,6 +75,22 @@ Contributor License Agreement (CLA) may be required before larger contributions
 are merged — this keeps the copyright consolidated so the dual model stays
 enforceable.
 
+## Third-party components
+
+OPM bundles and depends on third-party software under their own licenses. See
+[`THIRD-PARTY-NOTICES.md`](THIRD-PARTY-NOTICES.md) for the summary and the
+machine-readable SBOMs in [`sbom/`](sbom/). Highlights:
+
+- **Backend, frontend, app**: permissive only (MIT / BSD / Apache-2.0 / ISC /
+  MPL / OFL). No copyleft.
+- **Standard scanner image**: bundles `masscan` (AGPL-3.0) and `nmap`
+  (GPLv2-with-clarifications) as **subprocesses** (aggregation, not linkage) plus
+  `nuclei` (MIT). OPM's own code is not a derivative of these.
+- **GVM scanner image** (`opm-scanner-gvm`): links `python-gvm` (GPL-3.0). The
+  GVM agent is therefore dual-licensed `BUSL-1.1 OR GPL-3.0-or-later` — see
+  [`scanner/LICENSE-GVM.md`](scanner/LICENSE-GVM.md). This is the only part of
+  OPM not under BSL-only.
+
 ## Trademark
 
 "STYLiTE" and "STYLiTE Orbit" are trademarks of STYLiTE. The BSL grants no rights
