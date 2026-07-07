@@ -70,7 +70,7 @@ tmp/
 .understand-anything/
 # Added by code-review-graph
 .code-review-graph/
-.claude/skills/
+#.claude/skills/
 .agents/skills/mini-wiki
 .mini-wiki/
 skills-lock.json

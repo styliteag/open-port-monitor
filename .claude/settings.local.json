@@ -9,5 +9,8 @@
       "Bash(docker compose:*)"
     ]
   },
-  "prefersReducedMotion": true
+  "prefersReducedMotion": true,
+  "enabledMcpjsonServers": [
+    "code-review-graph"
+  ]
 }
