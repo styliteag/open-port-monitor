@@ -71,6 +71,9 @@ logs:
 
 # --- Stack (development: hot-reload, bind-mounted sources) -----------------
 
+dev:
+    docker compose -f compose-dev.yml up --build
+
 dev-up:
     docker compose -f compose-dev.yml up -d --build
 
