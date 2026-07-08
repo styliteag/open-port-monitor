@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.3.1] - 2026-07-08
+
 ### Added
 
 - **Backend**: Two-factor authentication via TOTP. New columns `totp_secret`, `totp_secret_pending`, `totp_enabled`, `totp_last_used_step` on `users` plus a `user_backup_codes` table (migration `025_add_2fa_totp`). `/api/auth/login` now returns either a full access token or `{requires_2fa, challenge_token}`; the new `/api/auth/login/verify-2fa` exchanges the 5-minute challenge + 6-digit TOTP (or a backup code) for an access token. Self-service endpoints: `/api/auth/2fa/enroll/{start,verify}`, `/api/auth/2fa/disable`, `/api/auth/2fa/backup-codes/regenerate`. Admin reset via `DELETE /api/users/{id}/2fa` (refuses self-reset — admins disable their own via the self-service flow). `pyotp` added as a backend dependency — rebuild containers so it lands in the backend image.
