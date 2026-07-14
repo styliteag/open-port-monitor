@@ -124,6 +124,15 @@ existing trend must have an explicit destination or an explicit Drop decision.
 | Scan detail: progress, cancel, hide, port table, nuclei summary, all-source vulnerabilities table, diff view, engine logs | Unchanged | Keep | Browser test |
 | `/nse/results` standalone page (global severity/IP/CVE search across scans) | **Dropped**: scan detail and host detail already render all NSE/GVM/nuclei findings via `GET /api/scans/{id}/vulnerabilities` and the host vulnerabilities panel; the alert detail NSE link now targets the host's findings instead. The cross-scan CVE search has no v3 home — revisit before cut-over if the beta misses it. Route stays URL-reachable until Phase 6. | Drop | Product approval recorded here; browser test of relinked entry points |
 
+## Configuration hubs (inventoried 2026-07-14, Phase 4)
+
+| UI v2 behavior | UI v3 destination | Decision | Required evidence |
+|----------------|-------------------|----------|-------------------|
+| `/nse/profiles`, `/nse/library` (+ editor deep link), `/admin/gvm-library` | **Scan Templates** hub (`/scan-templates?tab=profiles|scripts|gvm`); page bodies extracted unchanged into feature components, old routes render the same components until cut-over | Change | Browser test of all three tabs |
+| `/alert-rules`, `/admin/severity-rules`, `/admin/ssh-alert-defaults` | **Alerting** hub (`/alerting?tab=rules|severity|ssh`); same extraction pattern | Change | Browser test of all three tabs |
+| `/scanners` list + detail | Unchanged | Keep | Browser test |
+| Rule-type wording ("Accepted") inside AlertRulesTable | Rename to Allow terminology in the Phase 6 polish sweep | Open | Terminology sweep |
+
 ## Remaining route groups
 
 The following groups must receive the same behavior-level inventory before their phase
@@ -135,9 +144,9 @@ plan.
 | Dashboard | Counts, scanner health, scan activity, next scans, navigation actions | 1 | Done (Phase 1) |
 | Hosts | Search/filter/sort, port data, comments, SSH data, findings, severity rules | 3 | Done (see Hosts section) |
 | Scans | Trigger/cancel actions, status, logs, results, findings, exports, deep links | 3 | Done (see Scans & Findings section) |
-| Scan Templates | NSE profiles, library/editor behavior, GVM library upload/refresh | 4 | Open |
-| Alerting | Alert rules, severity rules, SSH defaults, scope and permissions | 4 | Open |
-| Scanners | Create/edit/auth, kind, status, metadata refresh, GVM behavior | 4 | Open |
+| Scan Templates | NSE profiles, library/editor behavior, GVM library upload/refresh | 4 | Done (see Configuration hubs) |
+| Alerting | Alert rules, severity rules, SSH defaults, scope and permissions | 4 | Done (see Configuration hubs) |
+| Scanners | Create/edit/auth, kind, status, metadata refresh, GVM behavior | 4 | Done (Keep, unchanged) |
 | Administration | Users, roles, organization, hostname cache, permission boundaries | 5 | Open |
 | Executive Overview | Freshness, coverage, risk semantics, unknown/degraded states | 5 | Open |
 
