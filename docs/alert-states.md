@@ -1,5 +1,13 @@
 # Alert States
 
+> **⚠️ Partially stale (verified 2026-07-14):** every mention of `resolution_status`
+> (including `fix_planned` and `PATCH /api/alerts/{id}/status`) describes a column that
+> was **dropped in migration `006_remove_resolution_status`**; no such endpoint exists.
+> Current source of truth for UI v3 semantics:
+> [redesign/alert-state-action-matrix.md](redesign/alert-state-action-matrix.md).
+> The `dismissed` / port-rule ("accepted") / assignment / severity-override sections
+> remain accurate.
+
 This document describes how alert state works in the current codebase across the database, API, and UI.
 
 It is intentionally centered on the current implementation, because the alert system has changed over time and older terminology still appears in some historical notes and migrations.

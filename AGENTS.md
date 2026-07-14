@@ -120,7 +120,7 @@ All dev via Docker Compose. Do not restart unless specific reason — hot-reload
 
 Alert state tracked across orthogonal dimensions. Naming differs between layers.
 
-**DB columns**: `dismissed` (bool), `dismiss_reason` (text), `resolution_status` (open/in_progress/resolved), `assigned_to_user_id` (FK).
+**DB columns**: `dismissed` (bool), `dismiss_reason` (text), `assigned_to_user_id` (FK), `severity_override`. (`resolution_status` was dropped in migration 006 — parts of `docs/alert-states.md` still describe it; code wins.)
 
 "Accepted" is **not** stored on alert — computed by matching against `port_rules`/`global_port_rules` (`rule_type='accepted'`).
 

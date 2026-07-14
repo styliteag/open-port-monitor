@@ -16,7 +16,9 @@ only in AGENTS.md, not in the UI. "Blocked" is not even a state, just a severity
 
 1. **Inbox layout**: split view — alert list left, full detail right (host, port,
    history, evidence, matching rules). Keyboard shortcuts drive triage: j/k navigate,
-   A allow, M mute, S assign, Enter opens the host. Zero-inbox is the working model.
+   A opens the Allow dialog (scope selected explicitly), M the Mute dialog, S the
+   assign control, Enter opens the host. Shortcuts open dialogs — they never mutate
+   directly. Zero-inbox is the working model.
 2. **Effect-based action names** (UI copy only; API and DB fields keep their names):
    - **Allow** (was Accept) — "creates a rule: this port is expected here; it will never
      alert again."
@@ -25,13 +27,19 @@ only in AGENTS.md, not in the UI. "Blocked" is not even a state, just a severity
    - The "Blocked" pseudo-status is removed; it becomes a plain severity filter.
    - Every action button carries a one-line consequence subtitle.
 3. **Filters shrink** to: status (Open / Muted / Allowed), severity, network, source.
+   State dimensions, action effects, scopes, and permissions are specified in
+   [docs/redesign/alert-state-action-matrix.md](../redesign/alert-state-action-matrix.md).
 
 ## Consequences
 
 - The UI-label ↔ API-field mapping (Allow ↔ `accept`/port rule, Mute ↔ `dismissed=true`)
   must be documented in the glossary and `docs/alert-states.md`, and frontend code uses a
   single terminology module so labels never drift per page.
-- No backend changes; endpoints (`PUT /alerts/{id}/dismiss`, `bulk-accept-global`, …)
-  keep their names.
+- Endpoints (`PUT /alerts/{id}/dismiss`, `bulk-accept-global`, …) keep their names. One
+  backend extension is required: the alert list API gains server-side queue/policy state
+  (`queue_state`, `policy_state`) so Muted/Allowed filters paginate correctly — UI v2's
+  client-side rule matching cannot filter a paginated list.
+- No workflow states: `resolution_status` was dropped in migration 006; UI v3 does not
+  reintroduce workflow tracking.
 - Keyboard/split-view infrastructure is built in the first phase so it gets the longest
   beta soak.

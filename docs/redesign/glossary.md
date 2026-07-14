@@ -19,17 +19,21 @@ is permanent.
 | UI term | Effect (shown as button subtitle) | API / DB reality |
 |---------|-----------------------------------|------------------|
 | **Open** | Needs a decision. | `dismissed=false` |
-| **Allow** (action) | Creates a rule: this port is expected here; it will never alert again. | `POST /alerts/bulk-accept-global` → port rule + `dismissed=true` |
+| **Allow** (action) | Creates a rule: this port is expected here; it will never alert again. Scope (network/global) chosen explicitly in the dialog. | `POST /alerts/bulk-accept-network` or `bulk-accept-global` → port rule + `dismissed=true` |
 | **Allowed** (state) | Covered by an allow rule. | computed: matching `port_rules` / `global_port_rules` with `rule_type='accepted'` |
 | **Mute** (action) | Hides this alert; the next scan will raise it again. | `PUT /alerts/{id}/dismiss` → `dismissed=true`, no rule |
 | **Muted** (state) | Muted until the next scan finds it again. | `dismissed=true` without rule |
 | **Assign** | A colleague takes ownership. | `assigned_to_user_id` |
-| **Resolve / In progress** | Workflow status, independent of Allow/Mute. | `resolution_status` |
 | **Reopen** | Back to Open. | `PUT /alerts/{id}/reopen` → `dismissed=false` |
 | **Revoke rule** | Deletes the allow rule; future scans alert again. | `DELETE /api/port-rules/{scope}/{id}` |
 
 Removed term: **Blocked** — was never a state, only a `severity='critical'` filter. UI v3
 uses the severity filter directly.
+
+No workflow status: `resolution_status` (open/in_progress/resolved, later drafts added
+`fix_planned`) was dropped in migration `006_remove_resolution_status`. UI v3 has no
+workflow dimension; `docs/alert-states.md` and AGENTS.md sections describing it are
+stale. Details: [alert-state-action-matrix.md](alert-state-action-matrix.md).
 
 ## Retained technical terms (never paraphrased)
 

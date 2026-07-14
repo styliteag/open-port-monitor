@@ -53,6 +53,10 @@ leaves. Management opens one page and sees traffic lights.
 
 Old routes get redirects at cut-over so bookmarks survive.
 
+Route parity alone is not the gate: behavior-level parity (filters, actions, permissions,
+deep links) is tracked in [ui-v3-parity-matrix.md](ui-v3-parity-matrix.md); alert state
+semantics in [alert-state-action-matrix.md](alert-state-action-matrix.md).
+
 ## Phases (all on `ui-v3`; each phase browser-verified and `just frontend-check` green)
 
 **Phase 0 — Foundations.** New app shell + sidebar (3 areas, role-filtered), route
@@ -90,6 +94,10 @@ fix on `ui-v3`; then merge and `just release major` → 3.0.0.
 ## Backend impact (deliberately minimal)
 
 - New: executive overview aggregate endpoint (Phase 5).
+- New: alert list API extension — server-side `queue_state`/`policy_state` (+ allow-rule
+  info) so the inbox filters Open/Muted/Allowed paginate correctly (Phase 1; decided in
+  [alert-state-action-matrix.md](alert-state-action-matrix.md)). Query/schema layer only,
+  no new tables or columns.
 - No schema changes, no API renames — Allow/Mute are UI labels over the existing
   dismiss/accept endpoints (mapping fixed in the glossary).
 - Trend endpoints stay (consumed by Dashboard/Overview modules).

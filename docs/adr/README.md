@@ -14,4 +14,6 @@ Decisions from the UI v3 redesign grilling session (2026-07-14). Format: lightwe
 | [0007](0007-drop-trends-page.md) | Drop the standalone Trends page | accepted |
 
 Master plan: [../redesign/ui-v3-plan.md](../redesign/ui-v3-plan.md) ·
-Terminology: [../redesign/glossary.md](../redesign/glossary.md)
+Terminology: [../redesign/glossary.md](../redesign/glossary.md) ·
+Parity gate: [../redesign/ui-v3-parity-matrix.md](../redesign/ui-v3-parity-matrix.md) ·
+Alert semantics: [../redesign/alert-state-action-matrix.md](../redesign/alert-state-action-matrix.md)
