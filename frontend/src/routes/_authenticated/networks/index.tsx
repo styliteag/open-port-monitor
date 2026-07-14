@@ -15,7 +15,7 @@ import {
   useLatestScans,
 } from "@/features/dashboard/hooks/useDashboardData";
 import { useNetworkMutations } from "@/features/networks/hooks/useNetworkDetail";
-import { NetworkForm } from "@/features/networks/components/NetworkForm";
+import { NetworkWizard } from "@/features/networks/components/form/NetworkWizard";
 import { PhasePills } from "@/features/networks/components/PhasePills";
 import { SSH_ALERT_KEYS } from "@/features/admin/hooks/useAdmin";
 import {
@@ -520,11 +520,11 @@ function NetworksPage() {
         </div>
       )}
 
-      <NetworkForm open={createOpen} onOpenChange={setCreateOpen} />
+      <NetworkWizard open={createOpen} onOpenChange={setCreateOpen} />
       {cloneSource && (
         // Remount per source so react-hook-form picks up fresh defaults
         // when the user clones a different network in the same session.
-        <NetworkForm
+        <NetworkWizard
           key={`clone-${cloneSource.id}`}
           open
           onOpenChange={(open) => {

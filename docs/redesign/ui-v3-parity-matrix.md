@@ -87,7 +87,7 @@ The precise state derivation, action effects, scopes, and permissions are define
 | Schedule and schedule presets | Schedule | Keep | End-to-end test |
 | Alert recipients and thresholds | Alerting | Keep | End-to-end test |
 | SSH probe and per-network overrides | Alerting -> Advanced | Keep | Payload round-trip test |
-| Initial port rules during creation | Alerting; transaction and failure handling are undefined | New/Open | API design decision and integration test |
+| Initial port rules during creation | Not in the wizard (decided 2026-07-14): rules stay managed on the network detail page after creation, unchanged from v2 | Drop | Browser test of detail-page rules editor |
 | Review submitted configuration before creation | Review step | New | End-to-end test |
 | Invalid scanner/phase combinations | Impossible to select and still rejected by the backend | Keep/Change | Schema and end-to-end tests |
 
