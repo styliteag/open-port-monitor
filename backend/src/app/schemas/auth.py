@@ -1,6 +1,6 @@
 """Authentication request and response schemas."""
 
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 
 from app.models.user import ThemePreference, UserRole
 
@@ -10,6 +10,13 @@ class LoginRequest(BaseModel):
 
     email: EmailStr
     password: str
+
+
+class PasswordChangeRequest(BaseModel):
+    """Self-service password change; requires the current password."""
+
+    current_password: str
+    new_password: str = Field(min_length=8, max_length=128)
 
 
 class TokenResponse(BaseModel):

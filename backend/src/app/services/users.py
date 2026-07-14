@@ -2,7 +2,7 @@
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.security import hash_password
+from app.core.security import hash_password, verify_password
 from app.models.user import User, UserRole
 from app.repositories.base import BaseRepository
 
@@ -61,6 +61,26 @@ async def update_user(
         user.is_active = is_active
 
     return await UserRepository(db).flush_and_refresh(user)
+
+
+async def change_own_password(
+    db: AsyncSession,
+    user: User,
+    current_password: str,
+    new_password: str,
+) -> bool:
+    """Self-service password change.
+
+    Returns False when the current password does not verify. On success the
+    token_version bump invalidates every existing session, including the one
+    making this request — the client must sign in again.
+    """
+    if not verify_password(current_password, user.password_hash):
+        return False
+    user.password_hash = hash_password(new_password)
+    user.token_version += 1
+    await UserRepository(db).flush_and_refresh(user)
+    return True
 
 
 async def delete_user(db: AsyncSession, user: User) -> None:

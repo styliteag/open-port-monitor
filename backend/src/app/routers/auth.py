@@ -11,7 +11,12 @@ from app.core.config import settings
 from app.core.deps import CurrentUser, DbSession
 from app.core.permissions import ROLE_PERMISSIONS
 from app.core.security import verify_password
-from app.schemas.auth import LoginRequest, UserResponse, UserThemeUpdateRequest
+from app.schemas.auth import (
+    LoginRequest,
+    PasswordChangeRequest,
+    UserResponse,
+    UserThemeUpdateRequest,
+)
 from app.schemas.two_factor import (
     BackupCodesRegenerateRequest,
     BackupCodesRegenerateResponse,
@@ -23,6 +28,7 @@ from app.schemas.two_factor import (
     TotpEnrollVerifyResponse,
     Verify2FARequest,
 )
+from app.services import users as users_service
 from app.services.auth import authenticate_user, create_user_token, get_user_by_id
 from app.services.two_factor import (
     build_otpauth_uri,
@@ -217,6 +223,28 @@ async def logout(
     """Logout by incrementing token_version, invalidating all existing tokens."""
     current_user.token_version += 1
     db.add(current_user)
+    await db.commit()
+
+
+@router.post("/change-password", status_code=status.HTTP_204_NO_CONTENT)
+async def change_password(
+    current_user: CurrentUser,
+    db: DbSession,
+    request: PasswordChangeRequest,
+) -> None:
+    """Change own password.
+
+    Bumps token_version, so every session (including this one) is
+    invalidated and the client must sign in again.
+    """
+    changed = await users_service.change_own_password(
+        db, current_user, request.current_password, request.new_password
+    )
+    if not changed:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Current password is incorrect",
+        )
     await db.commit()
 
 

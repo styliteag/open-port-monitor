@@ -1,6 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { PasswordChangeCard } from '@/features/auth/components/PasswordChangeCard'
 import { TwoFactorEnrollWizard } from '@/features/auth/components/TwoFactorEnrollWizard'
 import { TwoFactorManagePanel } from '@/features/auth/components/TwoFactorManagePanel'
 import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
@@ -15,11 +16,15 @@ function SecuritySettingsPage() {
   return (
     <div className="mx-auto max-w-2xl space-y-6 p-6">
       <div>
-        <h1 className="text-2xl font-strong text-foreground">Security</h1>
+        <h1 className="text-2xl font-strong text-foreground">
+          Account Security
+        </h1>
         <p className="text-sm text-muted-foreground">
-          Manage your account's security settings.
+          Password and two-factor authentication for your account.
         </p>
       </div>
+
+      <PasswordChangeCard />
 
       <Card>
         <CardHeader>
