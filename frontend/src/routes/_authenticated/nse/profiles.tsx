@@ -1,7 +1,8 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 
-import { NseProfilesPage } from "@/features/nse/components/NseProfilesPage";
-
+// UI v3 cut-over: this v2 route permanently redirects to its new home.
 export const Route = createFileRoute("/_authenticated/nse/profiles")({
-  component: NseProfilesPage,
+  beforeLoad: () => {
+    throw redirect({ to: "/scan-templates" });
+  },
 });

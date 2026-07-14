@@ -1,7 +1,8 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 
-import { SeverityRulesPage } from "@/features/severity-rules/components/SeverityRulesPage";
-
+// UI v3 cut-over: this v2 route permanently redirects to its new home.
 export const Route = createFileRoute("/_authenticated/admin/severity-rules")({
-  component: SeverityRulesPage,
+  beforeLoad: () => {
+    throw redirect({ to: "/alerting", search: { tab: "severity" } });
+  },
 });

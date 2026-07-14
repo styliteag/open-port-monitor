@@ -1,7 +1,8 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 
-import { HostnameLookupPage } from "@/features/admin/components/HostnameLookupPage";
-
+// UI v3 cut-over: this v2 route permanently redirects to its new home.
 export const Route = createFileRoute("/_authenticated/admin/hostname-lookup")({
-  component: HostnameLookupPage,
+  beforeLoad: () => {
+    throw redirect({ to: "/admin/system" });
+  },
 });

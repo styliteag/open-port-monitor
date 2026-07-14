@@ -1,18 +1,29 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { Inbox } from "lucide-react";
+import { Download, Inbox } from "lucide-react";
+import { toast } from "sonner";
 
 import { EmptyState } from "@/components/data-display/EmptyState";
 import { ErrorState } from "@/components/data-display/ErrorState";
 import { LoadingState } from "@/components/data-display/LoadingState";
 import { SplitView } from "@/components/layout/SplitView";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
+import { AcceptModal } from "@/features/alerts/components/AcceptModal";
 import { AlertDetailPanel } from "@/features/alerts/components/AlertDetailPanel";
+import { DeleteConfirmModal } from "@/features/alerts/components/DeleteConfirmModal";
+import { DismissModal } from "@/features/alerts/components/DismissModal";
 import {
   statusPresetFilters,
   useAlerts,
+  useAlertMutations,
 } from "@/features/alerts/hooks/useAlerts";
 import { useNetworks } from "@/features/dashboard/hooks/useDashboardData";
 import { useDebounce } from "@/hooks/useDebounce";
@@ -20,6 +31,7 @@ import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import type { KeyboardShortcut } from "@/hooks/useKeyboardShortcuts";
 import type { Alert, AlertStatusPreset, Severity } from "@/lib/types";
 import { ALERT_STATUS } from "@/lib/terminology";
+import { useAuthStore } from "@/stores/auth.store";
 import { cn, formatRelativeTime } from "@/lib/utils";
 
 const PAGE_SIZE = 50;
@@ -55,6 +67,15 @@ export function AlertsInbox({
   const [muteOpen, setMuteOpen] = useState(false);
   const [assignOpen, setAssignOpen] = useState(false);
 
+  // Bulk selection (parity: bulk actions + permanent deletion)
+  const [selectedIds, setSelectedIds] = useState<ReadonlySet<number>>(
+    new Set(),
+  );
+  const [bulkAllowOpen, setBulkAllowOpen] = useState(false);
+  const [bulkMuteOpen, setBulkMuteOpen] = useState(false);
+  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
+  const { bulkDelete } = useAlertMutations();
+
   const networks = useNetworks();
 
   const alertsQuery = useAlerts({
@@ -85,6 +106,56 @@ export function AlertsInbox({
       params: { alertId: String(alert.id) },
       replace: true,
     });
+  };
+
+  const toggleSelected = (id: number) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const clearSelection = () => setSelectedIds(new Set());
+
+  const selectedSeverityCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    for (const alert of alerts) {
+      if (selectedIds.has(alert.id)) {
+        counts[alert.severity] = (counts[alert.severity] ?? 0) + 1;
+      }
+    }
+    return counts;
+  }, [alerts, selectedIds]);
+
+  // The export endpoint predates the queue/policy dimensions — map the
+  // status preset onto its dismissed param (Allowed exports need no
+  // narrower server filter than "dismissed").
+  const exportAlerts = async (format: "csv" | "pdf") => {
+    const params = new URLSearchParams();
+    if (status === "open") params.set("dismissed", "false");
+    if (status === "muted" || status === "allowed")
+      params.set("dismissed", "true");
+    if (source) params.set("source", source);
+    if (networkId !== "") params.set("network_id", String(networkId));
+    if (search) params.set("search", search);
+    const qs = params.toString();
+    const token = useAuthStore.getState().token;
+    const res = await fetch(
+      `/api/alerts/export/${format}${qs ? `?${qs}` : ""}`,
+      { headers: token ? { Authorization: `Bearer ${token}` } : {} },
+    );
+    if (!res.ok) {
+      toast.error(`Export failed: ${res.statusText}`);
+      return;
+    }
+    const blob = await res.blob();
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `alerts.${format}`;
+    a.click();
+    URL.revokeObjectURL(a.href);
   };
 
   const shortcuts: KeyboardShortcut[] = useMemo(
@@ -225,7 +296,67 @@ export function AlertsInbox({
                 </span>
               ),
           )}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                className="ml-auto flex items-center gap-1 rounded px-1.5 py-0.5 hover:text-foreground transition-colors"
+                title="Export current view"
+              >
+                <Download className="h-3 w-3" />
+                Export
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => void exportAlerts("csv")}>
+                CSV
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => void exportAlerts("pdf")}>
+                PDF
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
+
+        {/* Bulk action bar */}
+        {selectedIds.size > 0 && (
+          <div className="flex items-center gap-2 rounded-md border border-border bg-card px-2 py-1.5 text-xs">
+            <span className="text-muted-foreground">
+              {selectedIds.size} selected
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-6 px-2 text-xs"
+              onClick={() => setBulkAllowOpen(true)}
+            >
+              Allow
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-6 px-2 text-xs"
+              onClick={() => setBulkMuteOpen(true)}
+            >
+              Mute
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-6 px-2 text-xs text-destructive"
+              onClick={() => setBulkDeleteOpen(true)}
+            >
+              Delete
+            </Button>
+            <button
+              type="button"
+              onClick={clearSelection}
+              className="ml-auto text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Clear
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Rows */}
@@ -261,6 +392,14 @@ export function AlertsInbox({
             )}
           >
             <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                aria-label={`Select alert ${alert.id}`}
+                checked={selectedIds.has(alert.id)}
+                onChange={() => toggleSelected(alert.id)}
+                onClick={(e) => e.stopPropagation()}
+                className="h-3.5 w-3.5 shrink-0 rounded border-border/50 bg-background"
+              />
               <span
                 className={cn(
                   "h-2 w-2 shrink-0 rounded-full",
@@ -339,6 +478,39 @@ export function AlertsInbox({
   return (
     <div className="-m-6 h-[calc(100vh-3.5rem)]">
       <SplitView list={list} detail={detail} />
+
+      <AcceptModal
+        alertIds={[...selectedIds]}
+        open={bulkAllowOpen}
+        onOpenChange={setBulkAllowOpen}
+        networks={networks.data?.networks ?? []}
+        onSuccess={clearSelection}
+      />
+      <DismissModal
+        alertIds={[...selectedIds]}
+        open={bulkMuteOpen}
+        onOpenChange={setBulkMuteOpen}
+        onSuccess={clearSelection}
+      />
+      <DeleteConfirmModal
+        alertCount={selectedIds.size}
+        severityCounts={selectedSeverityCounts}
+        open={bulkDeleteOpen}
+        onOpenChange={setBulkDeleteOpen}
+        onConfirm={() =>
+          bulkDelete.mutate(
+            { alert_ids: [...selectedIds] },
+            {
+              onSuccess: () => {
+                toast.success(`${selectedIds.size} alerts deleted`);
+                setBulkDeleteOpen(false);
+                clearSelection();
+              },
+              onError: (e) => toast.error(e.message),
+            },
+          )
+        }
+      />
     </div>
   );
 }

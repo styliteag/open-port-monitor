@@ -249,7 +249,7 @@ export function AlertRulesTable({
             }
             className="h-7 text-xs w-[100px]"
           >
-            <option value="accepted">Accepted</option>
+            <option value="accepted">Allowed</option>
             <option value="critical">Critical</option>
           </Select>
         ),

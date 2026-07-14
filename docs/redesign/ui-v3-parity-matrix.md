@@ -34,7 +34,7 @@ what must be checked before that cut-over is allowed.
 | Collapsible sidebar | New app shell | Keep | 0 | Component test |
 | Quick Scan entry point | Sidebar button kept (decided 2026-07-14, Phase 0) | Keep | 0 | Browser test |
 | Viewer, analyst, operator, and admin behavior | Permission-aware navigation and actions | Change | 0 | End-to-end test for every role |
-| Old bookmarks and shared URLs | Redirects to new destinations | Keep | 6 | Redirect tests including path parameters |
+| Old bookmarks and shared URLs | Redirects to new destinations | Keep | 6 | Done: all 10 retired v2 routes browser-verified to land on their new homes (incl. `?tab=` targets) |
 | Loading, error, empty, and retry states | Shared state components | Change | All | Component tests and browser review |
 | Destructive-action confirmation | Shared confirmation pattern | Keep | 0 | Component and end-to-end tests |
 
@@ -53,7 +53,7 @@ what must be checked before that cut-over is allowed.
 | Active/dismissed filter | Server-side queue and policy filters (list API extension decided 2026-07-14, see alert behavior matrix) | Change | API contract and pagination test |
 | Table sorting | Inbox list sorting | Keep | Component test |
 | Pagination and page size | Inbox list pagination | Keep | End-to-end test |
-| CSV and PDF export | Inbox export menu, gated by `export_data` | Keep | Permission and export tests |
+| CSV and PDF export | Inbox export menu (maps status preset onto the export endpoint's `dismissed` param) | Keep | Done (Phase 6): browser-verified |
 | Accept globally or for a network | Allow dialog with explicit scope | Change | End-to-end tests for both scopes |
 | Dismiss | Mute | Change | End-to-end test |
 | Reopen | Alert detail action | Keep | End-to-end test |
@@ -61,8 +61,8 @@ what must be checked before that cut-over is allowed.
 | Comments and activity timeline | Detail panel | Keep | End-to-end test |
 | Evidence and scan presence | Detail panel | Keep | Browser and component tests |
 | Severity override and severity-rule entry points | Detail panel | Keep | End-to-end test |
-| Bulk actions | Inbox selection actions | Keep | End-to-end test including partial failure |
-| Permanent deletion | Restricted overflow action with confirmation | Keep/Open | Permission decision and end-to-end test |
+| Bulk actions | Inbox row checkboxes + selection bar (Allow with explicit scope / Mute / Delete) | Keep | Done (Phase 6): browser-verified; bulk endpoints unchanged |
+| Permanent deletion | Bulk-delete via selection bar with severity-breakdown confirmation (existing analyst+ endpoint) | Keep | Done (Phase 6): browser-verified |
 | Keyboard navigation | `j`/`k`; action keys open dialogs or menus | New | End-to-end and accessibility tests |
 
 The precise state derivation, action effects, scopes, and permissions are defined in

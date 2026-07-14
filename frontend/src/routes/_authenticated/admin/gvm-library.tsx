@@ -1,7 +1,8 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 
-import { GvmLibraryPage } from "@/features/gvm-library/components/GvmLibraryPage";
-
+// UI v3 cut-over: this v2 route permanently redirects to its new home.
 export const Route = createFileRoute("/_authenticated/admin/gvm-library")({
-  component: GvmLibraryPage,
+  beforeLoad: () => {
+    throw redirect({ to: "/scan-templates", search: { tab: "gvm" } });
+  },
 });

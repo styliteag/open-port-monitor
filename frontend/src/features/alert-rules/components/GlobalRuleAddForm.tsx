@@ -109,7 +109,7 @@ export function GlobalRuleAddForm({
                   setRuleType(e.target.value as "accepted" | "critical")
                 }
               >
-                <option value="accepted">Accepted</option>
+                <option value="accepted">Allowed</option>
                 <option value="critical">Critical</option>
               </Select>
             </div>

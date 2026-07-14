@@ -1,7 +1,8 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 
-import { SshAlertDefaultsPage } from "@/features/admin/components/SshAlertDefaultsPage";
-
+// UI v3 cut-over: this v2 route permanently redirects to its new home.
 export const Route = createFileRoute("/_authenticated/admin/ssh-alert-defaults")({
-  component: SshAlertDefaultsPage,
+  beforeLoad: () => {
+    throw redirect({ to: "/alerting", search: { tab: "ssh" } });
+  },
 });
