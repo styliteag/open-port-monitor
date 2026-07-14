@@ -107,6 +107,23 @@ existing trend must have an explicit destination or an explicit Drop decision.
 | 7/30/90-day range selection | Module filter or explicit removal | Open | Product decision |
 | Per-network trend filter | Module filter or explicit removal | Open | Product decision |
 
+## Hosts (inventoried 2026-07-14, Phase 3)
+
+| UI v2 behavior | UI v3 destination | Decision | Required evidence |
+|----------------|-------------------|----------|-------------------|
+| Hosts/global-ports view toggle, search, network + IPv4/IPv6 + staleness filters, service quick-filters, sorting, pagination | Unchanged | Keep | Browser test |
+| Bulk deletion with confirmation; CSV export | Unchanged | Keep | Browser test |
+| Host detail: risk score + sparkline, comment, known hostnames, rescan/custom scan, CSV/PDF export | Unchanged | Keep | Browser test |
+| Host detail tabs (Ports/Alerts/Vulnerabilities/Scans/SSH/Timeline) incl. severity-rule entry points | Unchanged — already matches the v3 tab pattern | Keep | Browser test |
+
+## Scans & Findings (inventoried 2026-07-14, Phase 3)
+
+| UI v2 behavior | UI v3 destination | Decision | Required evidence |
+|----------------|-------------------|----------|-------------------|
+| Scan list (status, ports, trigger, timestamps, pagination) | + visible network filter and network column (network_id search param existed but was never rendered) | Change | Browser test |
+| Scan detail: progress, cancel, hide, port table, nuclei summary, all-source vulnerabilities table, diff view, engine logs | Unchanged | Keep | Browser test |
+| `/nse/results` standalone page (global severity/IP/CVE search across scans) | **Dropped**: scan detail and host detail already render all NSE/GVM/nuclei findings via `GET /api/scans/{id}/vulnerabilities` and the host vulnerabilities panel; the alert detail NSE link now targets the host's findings instead. The cross-scan CVE search has no v3 home — revisit before cut-over if the beta misses it. Route stays URL-reachable until Phase 6. | Drop | Product approval recorded here; browser test of relinked entry points |
+
 ## Remaining route groups
 
 The following groups must receive the same behavior-level inventory before their phase
@@ -115,9 +132,9 @@ plan.
 
 | Group | Minimum behaviors to inventory | Phase | Status |
 |-------|--------------------------------|-------|--------|
-| Dashboard | Counts, scanner health, scan activity, next scans, navigation actions | 1 | Open |
-| Hosts | Search/filter/sort, port data, comments, SSH data, findings, severity rules | 3 | Open |
-| Scans | Trigger/cancel actions, status, logs, results, findings, exports, deep links | 3 | Open |
+| Dashboard | Counts, scanner health, scan activity, next scans, navigation actions | 1 | Done (Phase 1) |
+| Hosts | Search/filter/sort, port data, comments, SSH data, findings, severity rules | 3 | Done (see Hosts section) |
+| Scans | Trigger/cancel actions, status, logs, results, findings, exports, deep links | 3 | Done (see Scans & Findings section) |
 | Scan Templates | NSE profiles, library/editor behavior, GVM library upload/refresh | 4 | Open |
 | Alerting | Alert rules, severity rules, SSH defaults, scope and permissions | 4 | Open |
 | Scanners | Create/edit/auth, kind, status, metadata refresh, GVM behavior | 4 | Open |
