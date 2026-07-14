@@ -21,6 +21,7 @@ from .routers import (
     networks,
     nse,
     organization,
+    overview,
     policy,
     ports,
     roles,
@@ -106,6 +107,7 @@ app.include_router(metadata.router)
 app.include_router(networks.router)
 app.include_router(nse.router)
 app.include_router(organization.router)
+app.include_router(overview.router)
 app.include_router(policy.router)
 app.include_router(ports.router)
 app.include_router(roles.router)

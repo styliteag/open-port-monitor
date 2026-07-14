@@ -29,7 +29,6 @@ from app.schemas.alert import (
     AlertResponse,
     AlertSSHSummary,
     DismissSuggestionsResponse,
-    Severity,
 )
 from app.schemas.host import PortRuleMatch
 from app.services import alert_comments as alert_comments_service
@@ -42,24 +41,15 @@ from app.services import ssh_results as ssh_service
 from app.services import users as users_service
 from app.services.alert_queries import _build_alert_filters, count_alerts
 from app.services.alert_rules import port_rule_matches_alert, ssh_rule_matches_alert
+from app.services.alert_severity import TYPE_SEVERITY, lightweight_severity
 
 from .detail import _severity_override_value, compute_alert_severity
 
 router = APIRouter()
 
-# Lightweight severity mapping by alert_type (no async rule checks)
-_TYPE_SEVERITY: dict[str, str] = {
-    "blocked": "critical",
-    "new_port": "high",
-    "not_allowed": "medium",
-    "ssh_insecure_auth": "high",
-    "ssh_weak_cipher": "medium",
-    "ssh_weak_kex": "medium",
-    "ssh_outdated_version": "medium",
-    "ssh_config_regression": "high",
-    "nse_vulnerability": "medium",
-    "nse_cve_detected": "medium",
-}
+# Lightweight severity mapping by alert_type (no async rule checks) —
+# shared with the executive overview via services/alert_severity.
+_TYPE_SEVERITY = TYPE_SEVERITY
 
 
 async def _count_by_severity(
@@ -106,12 +96,7 @@ async def _count_by_severity(
 
 
 def _lightweight_severity(alert_type_value: str, override: str | None) -> str:
-    if override:
-        try:
-            return Severity(override).value
-        except ValueError:
-            pass
-    return _TYPE_SEVERITY.get(alert_type_value, "medium")
+    return lightweight_severity(alert_type_value, override)
 
 
 def _severity_counts_from_alerts(alerts: list[Alert]) -> dict[str, int]:

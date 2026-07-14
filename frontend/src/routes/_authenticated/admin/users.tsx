@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Plus, Trash2, ShieldCheck, ShieldOff, Pencil } from "lucide-react";
 import { toast } from "sonner";
 
@@ -8,11 +8,58 @@ import { ErrorState } from "@/components/data-display/ErrorState";
 import { StatusBadge } from "@/components/data-display/StatusBadge";
 import { useUsers, useUserMutations } from "@/features/admin/hooks/useAdmin";
 import { CreateUserModal } from "@/features/admin/components/CreateUserModal";
-import { formatRelativeTime } from "@/lib/utils";
+import { RolesPage } from "@/features/admin/components/RolesPage";
+import { cn, formatRelativeTime } from "@/lib/utils";
+
+interface UsersSearch {
+  tab?: "roles";
+}
 
 export const Route = createFileRoute("/_authenticated/admin/users")({
-  component: UsersPage,
+  validateSearch: (search: Record<string, unknown>): UsersSearch => ({
+    tab: search.tab === "roles" ? "roles" : undefined,
+  }),
+  component: UsersRolesPage,
 });
+
+/** Administration hub: user management + read-only roles reference (ADR 0002). */
+function UsersRolesPage() {
+  const { tab } = Route.useSearch();
+  const navigate = useNavigate({ from: Route.fullPath });
+
+  return (
+    <div className="space-y-4">
+      <div
+        role="tablist"
+        className="inline-flex gap-0.5 rounded-lg border border-border-subtle bg-surface-2/50 p-[3px] text-xs font-emphasis"
+      >
+        {(["users", "roles"] as const).map((key) => (
+          <button
+            key={key}
+            type="button"
+            role="tab"
+            aria-selected={(tab ?? "users") === key}
+            onClick={() =>
+              void navigate({
+                search: { tab: key === "roles" ? "roles" : undefined },
+                replace: true,
+              })
+            }
+            className={cn(
+              "cursor-pointer rounded-md border px-3 py-1 capitalize transition-colors",
+              (tab ?? "users") === key
+                ? "border-border-standard bg-surface-3 text-text-primary shadow-sm"
+                : "border-transparent text-text-quaternary hover:text-text-secondary",
+            )}
+          >
+            {key}
+          </button>
+        ))}
+      </div>
+      {tab === "roles" ? <RolesPage /> : <UsersPage />}
+    </div>
+  );
+}
 
 const roleVariant = {
   admin: "danger" as const,

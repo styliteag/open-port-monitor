@@ -84,6 +84,31 @@ export interface Alert {
   allow_scope: "network" | "global" | null;
 }
 
+export interface NetworkStatusEntry {
+  network_id: number;
+  name: string;
+  status: "red" | "amber" | "green";
+  open_critical: number;
+  open_high: number;
+  open_total: number;
+}
+
+export interface TopRiskEntry {
+  alert_id: number;
+  message: string;
+  severity: Severity;
+  ip: string;
+  port: number | null;
+  network_name: string | null;
+}
+
+export interface ExecutiveOverviewResponse {
+  networks: NetworkStatusEntry[];
+  top_risks: TopRiskEntry[];
+  open_alerts: number;
+  handled_alerts_30d: number;
+}
+
 export type QueueState = "inbox" | "out_of_inbox";
 export type PolicyState = "none" | "allowed_network" | "allowed_global";
 export type PolicyFilter = PolicyState | "allowed";

@@ -147,8 +147,8 @@ plan.
 | Scan Templates | NSE profiles, library/editor behavior, GVM library upload/refresh | 4 | Done (see Configuration hubs) |
 | Alerting | Alert rules, severity rules, SSH defaults, scope and permissions | 4 | Done (see Configuration hubs) |
 | Scanners | Create/edit/auth, kind, status, metadata refresh, GVM behavior | 4 | Done (Keep, unchanged) |
-| Administration | Users, roles, organization, hostname cache, permission boundaries | 5 | Open |
-| Executive Overview | Freshness, coverage, risk semantics, unknown/degraded states | 5 | Open |
+| Administration | Users, roles, organization, hostname cache, permission boundaries | 5 | Done: `/admin/users` hub gains a read-only Roles tab (`?tab=roles`); `/admin/system` hosts the hostname cache (page body extracted); organization unchanged; account security already lived in the user menu (header email badge → `/settings/security`) | 
+| Executive Overview | Freshness, coverage, risk semantics, unknown/degraded states | 5 | Done: `GET /api/overview/executive` (any role) — red = open critical, amber = open high, green otherwise, lightweight severity incl. overrides; top 5 open risks; "handled 30d" approximates via created_at of dismissed alerts (no dismissed_at column). Trend module reuses the existing alert-trend endpoint |
 
 ## Phase and release gates
 
