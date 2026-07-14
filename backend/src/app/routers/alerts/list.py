@@ -33,6 +33,7 @@ from app.schemas.alert import (
 )
 from app.schemas.host import PortRuleMatch
 from app.services import alert_comments as alert_comments_service
+from app.services import alert_policy as alert_policy_service
 from app.services import alert_rules as alert_rules_service
 from app.services import alerts as alerts_service
 from app.services import hosts as hosts_service
@@ -99,15 +100,25 @@ async def _count_by_severity(
     result = await db.execute(query)
     counts: Counter[str] = Counter()
     for at, override in result.all():
-        if override:
-            try:
-                sev = Severity(override).value
-            except ValueError:
-                sev = _TYPE_SEVERITY.get(at.value, "medium")
-        else:
-            sev = _TYPE_SEVERITY.get(at.value, "medium")
-        counts[sev] += 1
+        counts[_lightweight_severity(at.value, override)] += 1
 
+    return dict(counts)
+
+
+def _lightweight_severity(alert_type_value: str, override: str | None) -> str:
+    if override:
+        try:
+            return Severity(override).value
+        except ValueError:
+            pass
+    return _TYPE_SEVERITY.get(alert_type_value, "medium")
+
+
+def _severity_counts_from_alerts(alerts: list[Alert]) -> dict[str, int]:
+    """Severity counts for an in-memory alert set (policy-filtered path)."""
+    counts: Counter[str] = Counter()
+    for alert in alerts:
+        counts[_lightweight_severity(alert.alert_type.value, alert.severity_override)] += 1
     return dict(counts)
 
 
@@ -120,6 +131,10 @@ async def list_alerts(
     source: str | None = Query(None, max_length=10),
     network_id: int | None = Query(None, ge=1),
     dismissed: bool | None = Query(None),
+    queue_state: str | None = Query(None, pattern="^(inbox|out_of_inbox)$"),
+    policy_state: str | None = Query(
+        None, pattern="^(none|allowed|allowed_network|allowed_global)$"
+    ),
     ip: str | None = Query(None),
     port: int | None = Query(None, ge=1, le=65535),
     search: str | None = Query(None, max_length=200),
@@ -135,43 +150,94 @@ async def list_alerts(
             detail="start_date cannot be after end_date",
         )
 
-    total = await count_alerts(
-        db,
-        alert_type=alert_type,
-        source=source,
-        network_id=network_id,
-        dismissed=dismissed,
-        ip=ip,
-        port=port,
-        search=search,
-        start_date=start_date,
-        end_date=end_date,
-    )
+    if queue_state is not None:
+        queue_dismissed = queue_state == alert_policy_service.QUEUE_OUT_OF_INBOX
+        if dismissed is not None and dismissed != queue_dismissed:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="queue_state conflicts with dismissed",
+            )
+        dismissed = queue_dismissed
 
-    alerts = await alerts_service.get_alerts(
-        db,
-        alert_type=alert_type,
-        source=source,
-        network_id=network_id,
-        dismissed=dismissed,
-        ip=ip,
-        port=port,
-        search=search,
-        sort_by=sort_by,
-        sort_dir=sort_dir,
-        start_date=start_date,
-        end_date=end_date,
-        offset=pagination.offset,
-        limit=pagination.limit,
-    )
+    policy_filtered: list[tuple[Alert, str | None]] | None = None
+    if policy_state is not None:
+        # Rule criteria are JSON (port ranges), so the policy dimension is
+        # matched in Python over the full candidate set before pagination —
+        # per-page matching would break totals and page boundaries.
+        candidates = await alerts_service.get_alerts(
+            db,
+            alert_type=alert_type,
+            source=source,
+            network_id=network_id,
+            dismissed=dismissed,
+            ip=ip,
+            port=port,
+            search=search,
+            sort_by=sort_by,
+            sort_dir=sort_dir,
+            start_date=start_date,
+            end_date=end_date,
+            offset=0,
+            limit=None,
+        )
+        policy_by_id = await alert_policy_service.compute_policy_states(
+            db, [alert for alert, _ in candidates]
+        )
+        policy_filtered = [
+            (alert, name)
+            for alert, name in candidates
+            if alert_policy_service.policy_filter_matches(
+                policy_by_id[alert.id], policy_state
+            )
+        ]
+        total = len(policy_filtered)
+        alerts = policy_filtered[
+            pagination.offset : pagination.offset + pagination.limit
+        ]
+    else:
+        total = await count_alerts(
+            db,
+            alert_type=alert_type,
+            source=source,
+            network_id=network_id,
+            dismissed=dismissed,
+            ip=ip,
+            port=port,
+            search=search,
+            start_date=start_date,
+            end_date=end_date,
+        )
 
-    # Build a cache of hosts by IP to avoid N+1 queries
+        alerts = await alerts_service.get_alerts(
+            db,
+            alert_type=alert_type,
+            source=source,
+            network_id=network_id,
+            dismissed=dismissed,
+            ip=ip,
+            port=port,
+            search=search,
+            sort_by=sort_by,
+            sort_dir=sort_dir,
+            start_date=start_date,
+            end_date=end_date,
+            offset=pagination.offset,
+            limit=pagination.limit,
+        )
+        policy_by_id = await alert_policy_service.compute_policy_states(
+            db, [alert for alert, _ in alerts]
+        )
+
+    # Build a cache of hosts by IP to avoid N+1 queries.
+    # Loop variable must NOT be named `ip` — that shadows the router query
+    # param, which is passed to _count_by_severity below (caused severity
+    # counts to be silently filtered to the last IP on the page).
     unique_ips = set(alert.ip for alert, _ in alerts)
     host_cache: dict[str, tuple[int, str | None, str | None]] = {}
-    for ip in unique_ips:
-        host = await hosts_service.get_host_by_ip(db, ip)
+    for host_ip in unique_ips:
+        host = await hosts_service.get_host_by_ip(db, host_ip)
         if host:
-            host_cache[ip] = (host.id, host.hostname, host.user_comment)
+            host_cache[host_ip] = (host.id, host.hostname, host.user_comment)
 
     # Build a cache of assigned user emails to avoid N+1 queries
     unique_user_ids = set(
@@ -209,6 +275,7 @@ async def list_alerts(
         last_comment_by = comment_info[1] if comment_info else None
         last_comment_at = comment_info[2] if comment_info else None
 
+        alert_policy = policy_by_id.get(alert.id, alert_policy_service.NO_POLICY)
         alert_responses.append(
             AlertResponse(
                 id=alert.id,
@@ -233,6 +300,10 @@ async def list_alerts(
                 last_comment=last_comment,
                 last_comment_by=last_comment_by,
                 last_comment_at=last_comment_at,
+                queue_state=alert_policy_service.queue_state_for(alert.dismissed),
+                policy_state=alert_policy.policy_state,
+                allow_rule_id=alert_policy.allow_rule_id,
+                allow_scope=alert_policy.allow_scope,
             )
         )
 
@@ -317,18 +388,23 @@ async def list_alerts(
         resp.matching_rules = matches
 
     # Compute severity counts across all matching alerts (not just current page)
-    severity_counts = await _count_by_severity(
-        db,
-        alert_type=alert_type,
-        source=source,
-        network_id=network_id,
-        dismissed=dismissed,
-        ip=ip,
-        port=port,
-        search=search,
-        start_date=start_date,
-        end_date=end_date,
-    )
+    if policy_filtered is not None:
+        severity_counts = _severity_counts_from_alerts(
+            [alert for alert, _ in policy_filtered]
+        )
+    else:
+        severity_counts = await _count_by_severity(
+            db,
+            alert_type=alert_type,
+            source=source,
+            network_id=network_id,
+            dismissed=dismissed,
+            ip=ip,
+            port=port,
+            search=search,
+            start_date=start_date,
+            end_date=end_date,
+        )
 
     return AlertListResponse(alerts=alert_responses, total=total, severity_counts=severity_counts)
 

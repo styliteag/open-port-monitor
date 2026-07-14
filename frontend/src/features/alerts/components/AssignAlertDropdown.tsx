@@ -22,12 +22,17 @@ interface AssignAlertDropdownProps {
   alertId: number;
   currentUserId: number | null;
   currentUserEmail: string | null;
+  /** Controlled open state (keyboard shortcut S in the inbox). */
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 export function AssignAlertDropdown({
   alertId,
   currentUserId,
   currentUserEmail,
+  open,
+  onOpenChange,
 }: AssignAlertDropdownProps) {
   const qc = useQueryClient();
 
@@ -37,9 +42,11 @@ export function AssignAlertDropdown({
   });
 
   const assign = useMutation({
+    // Backend contract is AlertAssignRequest.user_id — the previous
+    // assigned_to_user_id key was silently dropped and always unassigned.
     mutationFn: (userId: number | null) =>
       patchApi(`/api/alerts/${alertId}/assign`, {
-        assigned_to_user_id: userId,
+        user_id: userId,
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["alerts"] });
@@ -49,7 +56,7 @@ export function AssignAlertDropdown({
   });
 
   return (
-    <DropdownMenu>
+    <DropdownMenu open={open} onOpenChange={onOpenChange}>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="sm">
           <UserCircle className="h-3.5 w-3.5 mr-1.5" />

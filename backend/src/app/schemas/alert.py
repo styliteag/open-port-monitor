@@ -64,6 +64,12 @@ class AlertResponse(BaseModel):
     related_ssh_alerts_dismissed: bool = True
     # Port rule context
     matching_rules: list[PortRuleMatch] = []
+    # UI v3 queue/policy dimensions (docs/redesign/alert-state-action-matrix.md).
+    # Always populated by the list endpoint; None where not computed.
+    queue_state: str | None = None  # "inbox" | "out_of_inbox"
+    policy_state: str | None = None  # "none" | "allowed_network" | "allowed_global"
+    allow_rule_id: int | None = None
+    allow_scope: str | None = None  # "network" | "global"
 
 
 class AlertListResponse(BaseModel):

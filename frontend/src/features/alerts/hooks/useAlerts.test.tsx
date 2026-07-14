@@ -3,7 +3,12 @@ import { renderHook, waitFor } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import type { ReactNode } from 'react'
 
-import { useAlerts, useAlertMutations, useDismissSuggestions } from './useAlerts'
+import {
+  statusPresetFilters,
+  useAlerts,
+  useAlertMutations,
+  useDismissSuggestions,
+} from './useAlerts'
 import { useAuthStore } from '@/stores/auth.store'
 
 function createWrapper() {
@@ -80,6 +85,36 @@ describe('useAlerts', () => {
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
     const [url] = mockFetch.mock.calls[0]
     expect(url).toContain('offset=100')
+  })
+
+  it('passes queue_state and policy_state to URL', async () => {
+    const mockFetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ alerts: [] }),
+    })
+    vi.stubGlobal('fetch', mockFetch)
+
+    const { result } = renderHook(
+      () => useAlerts({ queue_state: 'inbox', policy_state: 'allowed' }),
+      { wrapper: createWrapper() },
+    )
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true))
+    const [url] = mockFetch.mock.calls[0]
+    expect(url).toContain('queue_state=inbox')
+    expect(url).toContain('policy_state=allowed')
+  })
+})
+
+describe('statusPresetFilters', () => {
+  it('maps the glossary presets to server predicates', () => {
+    expect(statusPresetFilters('open')).toEqual({ queue_state: 'inbox' })
+    expect(statusPresetFilters('muted')).toEqual({
+      queue_state: 'out_of_inbox',
+      policy_state: 'none',
+    })
+    expect(statusPresetFilters('allowed')).toEqual({ policy_state: 'allowed' })
+    expect(statusPresetFilters(undefined)).toEqual({})
   })
 })
 

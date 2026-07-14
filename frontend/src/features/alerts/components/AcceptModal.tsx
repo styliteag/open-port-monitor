@@ -23,6 +23,7 @@ interface AcceptModalProps {
   onSuccess?: () => void;
   networks?: { id: number; name: string }[];
   defaultScope?: AcceptScope;
+  defaultNetworkId?: number;
 }
 
 export function AcceptModal({
@@ -32,10 +33,13 @@ export function AcceptModal({
   onSuccess,
   networks = [],
   defaultScope = "global",
+  defaultNetworkId,
 }: AcceptModalProps) {
   const [reason, setReason] = useState("");
   const [scope, setScope] = useState<AcceptScope>(defaultScope);
-  const [networkId, setNetworkId] = useState<number | "">("");
+  const [networkId, setNetworkId] = useState<number | "">(
+    defaultNetworkId ?? "",
+  );
   const { bulkAcceptGlobal, bulkAcceptNetwork } = useAlertMutations();
 
   const isBulk = alertIds.length > 1;
@@ -54,7 +58,7 @@ export function AcceptModal({
         },
         {
           onSuccess: () => {
-            toast.success(`${alertIds.length} alert(s) accepted for network`);
+            toast.success(`${alertIds.length} alert(s) allowed for network`);
             handleClose();
           },
           onError: (e) => toast.error(e.message),
@@ -65,7 +69,7 @@ export function AcceptModal({
         { alert_ids: alertIds, reason: trimmed },
         {
           onSuccess: () => {
-            toast.success(`${alertIds.length} alert(s) accepted globally`);
+            toast.success(`${alertIds.length} alert(s) allowed globally`);
             handleClose();
           },
           onError: (e) => toast.error(e.message),
@@ -78,7 +82,7 @@ export function AcceptModal({
     onOpenChange(false);
     setReason("");
     setScope(defaultScope);
-    setNetworkId("");
+    setNetworkId(defaultNetworkId ?? "");
     onSuccess?.();
   };
 
@@ -91,23 +95,24 @@ export function AcceptModal({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>
-            {isBulk ? `Accept ${alertIds.length} Alerts` : "Accept Alert"}
+            {isBulk ? `Allow ${alertIds.length} Alerts` : "Allow Alert"}
           </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4 py-2">
           <p className="text-sm text-muted-foreground">
-            Accepting creates a{" "}
+            Allowing creates a{" "}
             <span className="font-emphasis text-foreground">
               permanent rule
-            </span>{" "}
-            that suppresses future alerts for the same port/condition.
-            {isBulk ? " This applies to all selected alerts." : ""} Unlike
-            dismiss, accepted ports{" "}
-            <span className="font-emphasis text-foreground">
-              will not trigger alerts on future scans
             </span>
-            .
+            : this port/condition is expected here and{" "}
+            <span className="font-emphasis text-foreground">
+              will never alert again
+            </span>{" "}
+            in the chosen scope.
+            {isBulk ? " This applies to all selected alerts." : ""} To hide an
+            alert only until the next scan, use{" "}
+            <span className="font-emphasis text-foreground">Mute</span> instead.
           </p>
 
           <div role="group" aria-labelledby="accept-scope-label">
@@ -193,10 +198,10 @@ export function AcceptModal({
           </Button>
           <Button onClick={handleAccept} disabled={isPending || !canSubmit}>
             {isPending
-              ? "Accepting..."
+              ? "Allowing..."
               : scope === "global"
-                ? "Accept Globally"
-                : "Accept for Network"}
+                ? "Allow Globally"
+                : "Allow for Network"}
           </Button>
         </DialogFooter>
       </DialogContent>

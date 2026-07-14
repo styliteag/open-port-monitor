@@ -78,7 +78,16 @@ export interface Alert {
   related_ssh_alert_count: number;
   related_ssh_alerts_dismissed: boolean;
   matching_rules: PortRuleMatch[];
+  queue_state: QueueState | null;
+  policy_state: PolicyState | null;
+  allow_rule_id: number | null;
+  allow_scope: "network" | "global" | null;
 }
+
+export type QueueState = "inbox" | "out_of_inbox";
+export type PolicyState = "none" | "allowed_network" | "allowed_global";
+export type PolicyFilter = PolicyState | "allowed";
+export type AlertStatusPreset = "open" | "muted" | "allowed";
 
 export interface AlertListResponse {
   alerts: Alert[];

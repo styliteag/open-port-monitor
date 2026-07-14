@@ -161,9 +161,9 @@ class AlertRepository(BaseRepository[Alert]):
         start_date: datetime | None = None,
         end_date: datetime | None = None,
         offset: int = 0,
-        limit: int = 50,
+        limit: int | None = 50,
     ) -> list[tuple[Alert, str | None]]:
-        """List alerts with optional filters and pagination."""
+        """List alerts with optional filters and pagination (limit=None: no cap)."""
         query = select(Alert, Network.name).outerjoin(
             Network, Alert.network_id == Network.id
         )

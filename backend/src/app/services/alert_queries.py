@@ -124,7 +124,7 @@ async def get_alerts(
     start_date: datetime | None = None,
     end_date: datetime | None = None,
     offset: int = 0,
-    limit: int = 50,
+    limit: int | None = 50,
 ) -> list[tuple[Alert, str | None]]:
     return await AlertRepository(db).list_with_network_name(
         alert_type=alert_type,

@@ -45,7 +45,7 @@ export function DismissModal({
         { alert_ids: alertIds, reason: trimmed },
         {
           onSuccess: () => {
-            toast.success(`${alertIds.length} alerts dismissed`);
+            toast.success(`${alertIds.length} alerts muted`);
             onOpenChange(false);
             setReason("");
             onSuccess?.();
@@ -58,7 +58,7 @@ export function DismissModal({
         { id: alertIds[0], reason: trimmed },
         {
           onSuccess: () => {
-            toast.success("Alert dismissed");
+            toast.success("Alert muted");
             onOpenChange(false);
             setReason("");
             onSuccess?.();
@@ -76,19 +76,19 @@ export function DismissModal({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>
-            {isBulk ? `Dismiss ${alertIds.length} Alerts` : "Dismiss Alert"}
+            {isBulk ? `Mute ${alertIds.length} Alerts` : "Mute Alert"}
           </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4 py-2">
           <p className="text-sm text-muted-foreground">
-            Dismissing hides {isBulk ? "these alerts" : "this alert"} from the
-            active list. Future scans that detect the same issue{" "}
+            Muting hides {isBulk ? "these alerts" : "this alert"} from the
+            inbox.{" "}
             <span className="font-emphasis text-foreground">
-              will still generate new alerts
+              The next scan that detects the same issue will raise it again
             </span>
-            . To permanently suppress alerts for a port, use{" "}
-            <span className="font-emphasis text-foreground">Accept</span>{" "}
+            . To permanently allow a port, use{" "}
+            <span className="font-emphasis text-foreground">Allow</span>{" "}
             instead.
           </p>
           <div>
@@ -99,7 +99,7 @@ export function DismissModal({
               id="dismiss-reason"
               value={reason}
               onChange={(e) => setReason(e.target.value)}
-              placeholder="Why is this alert being dismissed?"
+              placeholder="Why is this alert being muted?"
               rows={3}
             />
           </div>
@@ -130,7 +130,7 @@ export function DismissModal({
             onClick={handleDismiss}
             disabled={isPending || !reason.trim()}
           >
-            {isPending ? "Dismissing..." : "Dismiss"}
+            {isPending ? "Muting..." : "Mute"}
           </Button>
         </DialogFooter>
       </DialogContent>

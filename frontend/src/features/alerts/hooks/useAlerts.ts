@@ -4,7 +4,10 @@ import { fetchApi, patchApi, postApi, putApi, deleteApi } from "@/lib/api";
 import type {
   AlertListResponse,
   AlertComment,
+  AlertStatusPreset,
   DismissSuggestion,
+  PolicyFilter,
+  QueueState,
   Severity,
   AlertType,
 } from "@/lib/types";
@@ -14,6 +17,8 @@ interface AlertFilters {
   source?: string;
   network_id?: number;
   dismissed?: boolean;
+  queue_state?: QueueState;
+  policy_state?: PolicyFilter;
   ip?: string;
   port?: number;
   search?: string;
@@ -24,6 +29,25 @@ interface AlertFilters {
   limit?: number;
 }
 
+/**
+ * Maps the inbox status presets (glossary terms) to the server-side
+ * queue/policy predicates from the alert-state-action-matrix.
+ */
+export function statusPresetFilters(
+  status: AlertStatusPreset | undefined,
+): Pick<AlertFilters, "queue_state" | "policy_state"> {
+  switch (status) {
+    case "open":
+      return { queue_state: "inbox" };
+    case "muted":
+      return { queue_state: "out_of_inbox", policy_state: "none" };
+    case "allowed":
+      return { policy_state: "allowed" };
+    default:
+      return {};
+  }
+}
+
 function buildAlertParams(filters: AlertFilters): string {
   const params = new URLSearchParams();
   if (filters.type) params.set("type", filters.type);
@@ -31,6 +55,8 @@ function buildAlertParams(filters: AlertFilters): string {
   if (filters.network_id) params.set("network_id", String(filters.network_id));
   if (filters.dismissed !== undefined)
     params.set("dismissed", String(filters.dismissed));
+  if (filters.queue_state) params.set("queue_state", filters.queue_state);
+  if (filters.policy_state) params.set("policy_state", filters.policy_state);
   if (filters.ip) params.set("ip", filters.ip);
   if (filters.port) params.set("port", String(filters.port));
   if (filters.search) params.set("search", filters.search);
@@ -110,8 +136,10 @@ export function useAlertMutations() {
   });
 
   const assign = useMutation({
+    // Backend contract is AlertAssignRequest.user_id — the previous
+    // assigned_to_user_id key was silently dropped and always unassigned.
     mutationFn: ({ id, userId }: { id: number; userId: number | null }) =>
-      patchApi(`/api/alerts/${id}/assign`, { assigned_to_user_id: userId }),
+      patchApi(`/api/alerts/${id}/assign`, { user_id: userId }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["alerts"] }),
   });
 
