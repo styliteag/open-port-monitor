@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Frontend**: UI v3 Phase 0 foundations (redesign per `docs/redesign/ui-v3-plan.md`, ADRs 0001–0007). The sidebar is restructured into the task-based areas Overview / Monitor (Dashboard, Alerts, Hosts, Scans) / Configuration (Networks, Scanners, Scan Templates, Alerting; operator+) / Administration (Users & Roles, Organization, System; admin only) — role visibility now uses a `hasRole` hierarchy (`lib/roles.ts`) instead of the old `adminOnly` flag, and retired v2 entries (NSE Scripts, Results, Alert Rules, GVM Library, Severity Rules, SSH Defaults, Hostname Cache, Roles, Trends) are no longer in the nav (pages remain reachable by URL until their phases replace them). New placeholder routes `/overview`, `/scan-templates`, `/alerting`, and `/admin/system` mark the future hubs. New shared infrastructure for the alert inbox: `lib/terminology.ts` (effect-based Allow/Mute wording from `docs/redesign/glossary.md`), `hooks/useKeyboardShortcuts.ts` (global shortcuts that never fire in inputs, dialogs, or menus, per the alert-state-action-matrix interaction rules), and `components/layout/SplitView.tsx` (list/detail inbox layout). The Quick Scan sidebar button is kept (parity-matrix decision). All new modules have vitest coverage.
+
 ## [2.3.1] - 2026-07-08
 
 ### Added

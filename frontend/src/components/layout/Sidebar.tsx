@@ -1,27 +1,27 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
+  Bell,
   Building,
   ChevronLeft,
   ChevronRight,
   FileCode,
-  FileSearch,
-  Globe,
-  KeyRound,
+  Gauge,
   LayoutDashboard,
-  Library,
   Monitor,
   Network,
   Radar,
   Server,
-  Shield,
+  Settings2,
   ShieldAlert,
-  TrendingUp,
   Users,
   Zap,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { hasRole } from "@/lib/roles";
+import { NAV_AREAS } from "@/lib/terminology";
 import { cn } from "@/lib/utils";
+import type { UserRole } from "@/stores/auth.store";
 import { useAuthStore } from "@/stores/auth.store";
 import { useUiStore } from "@/stores/ui.store";
 
@@ -29,90 +29,60 @@ interface NavItem {
   label: string;
   href: string;
   icon: React.ComponentType<{ className?: string }>;
-  adminOnly?: boolean;
 }
 
-const mainNav: NavItem[] = [
-  { label: "Dashboard", href: "/", icon: LayoutDashboard },
-  { label: "Networks", href: "/networks", icon: Network },
-  { label: "Scans", href: "/scans", icon: Radar },
-  { label: "Hosts", href: "/hosts", icon: Monitor },
-  { label: "Alerts", href: "/alerts", icon: ShieldAlert },
-  { label: "Trends", href: "/trends", icon: TrendingUp },
-];
-
-const toolsNav: NavItem[] = [
-  { label: "NSE Scripts", href: "/nse/profiles", icon: FileCode },
-  { label: "Results", href: "/nse/results", icon: FileSearch },
-];
-
-const settingsNav: NavItem[] = [
-  { label: "Alert Rules", href: "/alert-rules", icon: Shield },
-];
-
-const adminNav: NavItem[] = [
-  { label: "Scanners", href: "/scanners", icon: Server },
-  {
-    label: "GVM Library",
-    href: "/admin/gvm-library",
-    icon: Library,
-    adminOnly: true,
-  },
-  {
-    label: "Severity Rules",
-    href: "/admin/severity-rules",
-    icon: Shield,
-    adminOnly: true,
-  },
-  {
-    label: "SSH Defaults",
-    href: "/admin/ssh-alert-defaults",
-    icon: KeyRound,
-    adminOnly: true,
-  },
-  {
-    label: "Hostname Cache",
-    href: "/admin/hostname-lookup",
-    icon: Globe,
-    adminOnly: true,
-  },
-  { label: "Users", href: "/admin/users", icon: Users, adminOnly: true },
-  { label: "Roles", href: "/admin/roles", icon: Shield, adminOnly: true },
-  {
-    label: "Organization",
-    href: "/admin/organization",
-    icon: Building,
-    adminOnly: true,
-  },
-];
-
-function NavGroup({
-  items,
-  collapsed,
-  label,
-}: {
-  items: NavItem[];
-  collapsed: boolean;
+interface NavArea {
   label?: string;
-}) {
+  minRole?: UserRole;
+  items: NavItem[];
+}
+
+const NAV_AREAS_CONFIG: NavArea[] = [
+  {
+    items: [{ label: "Overview", href: "/overview", icon: Gauge }],
+  },
+  {
+    label: NAV_AREAS.monitor,
+    items: [
+      { label: "Dashboard", href: "/", icon: LayoutDashboard },
+      { label: "Alerts", href: "/alerts", icon: ShieldAlert },
+      { label: "Hosts", href: "/hosts", icon: Monitor },
+      { label: "Scans", href: "/scans", icon: Radar },
+    ],
+  },
+  {
+    label: NAV_AREAS.configuration,
+    minRole: "operator",
+    items: [
+      { label: "Networks", href: "/networks", icon: Network },
+      { label: "Scanners", href: "/scanners", icon: Server },
+      { label: "Scan Templates", href: "/scan-templates", icon: FileCode },
+      { label: "Alerting", href: "/alerting", icon: Bell },
+    ],
+  },
+  {
+    label: NAV_AREAS.administration,
+    minRole: "admin",
+    items: [
+      { label: "Users & Roles", href: "/admin/users", icon: Users },
+      { label: "Organization", href: "/admin/organization", icon: Building },
+      { label: "System", href: "/admin/system", icon: Settings2 },
+    ],
+  },
+];
+
+function NavGroup({ area, collapsed }: { area: NavArea; collapsed: boolean }) {
   const routerState = useRouterState();
   const currentPath = routerState.location.pathname;
-  const userRole = useAuthStore((s) => s.user?.role);
-
-  const filteredItems = items.filter(
-    (item) => !item.adminOnly || userRole === "admin",
-  );
-
-  if (filteredItems.length === 0) return null;
 
   return (
     <div className="space-y-1">
-      {label && !collapsed && (
+      {area.label && !collapsed && (
         <p className="px-3 py-1 text-xs font-emphasis uppercase tracking-wider text-muted-foreground">
-          {label}
+          {area.label}
         </p>
       )}
-      {filteredItems.map((item) => {
+      {area.items.map((item) => {
         const isActive =
           item.href === "/"
             ? currentPath === "/"
@@ -144,6 +114,11 @@ export function Sidebar() {
   const collapsed = useUiStore((s) => s.sidebarCollapsed);
   const toggleSidebar = useUiStore((s) => s.toggleSidebar);
   const openQuickScan = useUiStore((s) => s.openQuickScan);
+  const userRole = useAuthStore((s) => s.user?.role);
+
+  const visibleAreas = NAV_AREAS_CONFIG.filter(
+    (area) => !area.minRole || hasRole(userRole, area.minRole),
+  );
 
   return (
     <aside
@@ -164,10 +139,9 @@ export function Sidebar() {
 
       {/* Navigation */}
       <nav className="flex-1 space-y-4 overflow-y-auto p-3 scrollbar-none">
-        <NavGroup items={mainNav} collapsed={collapsed} />
-        <NavGroup items={toolsNav} collapsed={collapsed} label="Tools" />
-        <NavGroup items={settingsNav} collapsed={collapsed} label="Settings" />
-        <NavGroup items={adminNav} collapsed={collapsed} label="Admin" />
+        {visibleAreas.map((area) => (
+          <NavGroup key={area.label ?? "top"} area={area} collapsed={collapsed} />
+        ))}
       </nav>
 
       {/* Scan Now Button */}

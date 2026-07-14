@@ -13,6 +13,9 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
 import { Route as AuthenticatedTrendsRouteImport } from './routes/_authenticated/trends'
+import { Route as AuthenticatedScanTemplatesRouteImport } from './routes/_authenticated/scan-templates'
+import { Route as AuthenticatedOverviewRouteImport } from './routes/_authenticated/overview'
+import { Route as AuthenticatedAlertingRouteImport } from './routes/_authenticated/alerting'
 import { Route as AuthenticatedAlertRulesRouteImport } from './routes/_authenticated/alert-rules'
 import { Route as AuthenticatedScansIndexRouteImport } from './routes/_authenticated/scans/index'
 import { Route as AuthenticatedScannersIndexRouteImport } from './routes/_authenticated/scanners/index'
@@ -29,6 +32,7 @@ import { Route as AuthenticatedNetworksNetworkIdRouteImport } from './routes/_au
 import { Route as AuthenticatedHostsHostIdRouteImport } from './routes/_authenticated/hosts/$hostId'
 import { Route as AuthenticatedAlertsAlertIdRouteImport } from './routes/_authenticated/alerts/$alertId'
 import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin/users'
+import { Route as AuthenticatedAdminSystemRouteImport } from './routes/_authenticated/admin/system'
 import { Route as AuthenticatedAdminSshAlertDefaultsRouteImport } from './routes/_authenticated/admin/ssh-alert-defaults'
 import { Route as AuthenticatedAdminSeverityRulesRouteImport } from './routes/_authenticated/admin/severity-rules'
 import { Route as AuthenticatedAdminRolesRouteImport } from './routes/_authenticated/admin/roles'
@@ -55,6 +59,22 @@ const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
 const AuthenticatedTrendsRoute = AuthenticatedTrendsRouteImport.update({
   id: '/trends',
   path: '/trends',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedScanTemplatesRoute =
+  AuthenticatedScanTemplatesRouteImport.update({
+    id: '/scan-templates',
+    path: '/scan-templates',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedOverviewRoute = AuthenticatedOverviewRouteImport.update({
+  id: '/overview',
+  path: '/overview',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedAlertingRoute = AuthenticatedAlertingRouteImport.update({
+  id: '/alerting',
+  path: '/alerting',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedAlertRulesRoute = AuthenticatedAlertRulesRouteImport.update({
@@ -147,6 +167,12 @@ const AuthenticatedAdminUsersRoute = AuthenticatedAdminUsersRouteImport.update({
   path: '/admin/users',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedAdminSystemRoute =
+  AuthenticatedAdminSystemRouteImport.update({
+    id: '/admin/system',
+    path: '/admin/system',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedAdminSshAlertDefaultsRoute =
   AuthenticatedAdminSshAlertDefaultsRouteImport.update({
     id: '/admin/ssh-alert-defaults',
@@ -199,6 +225,9 @@ export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
   '/login': typeof LoginRoute
   '/alert-rules': typeof AuthenticatedAlertRulesRoute
+  '/alerting': typeof AuthenticatedAlertingRoute
+  '/overview': typeof AuthenticatedOverviewRoute
+  '/scan-templates': typeof AuthenticatedScanTemplatesRoute
   '/trends': typeof AuthenticatedTrendsRoute
   '/admin/gvm-library': typeof AuthenticatedAdminGvmLibraryRoute
   '/admin/hostname-lookup': typeof AuthenticatedAdminHostnameLookupRoute
@@ -206,6 +235,7 @@ export interface FileRoutesByFullPath {
   '/admin/roles': typeof AuthenticatedAdminRolesRoute
   '/admin/severity-rules': typeof AuthenticatedAdminSeverityRulesRoute
   '/admin/ssh-alert-defaults': typeof AuthenticatedAdminSshAlertDefaultsRoute
+  '/admin/system': typeof AuthenticatedAdminSystemRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/alerts/$alertId': typeof AuthenticatedAlertsAlertIdRoute
   '/hosts/$hostId': typeof AuthenticatedHostsHostIdRoute
@@ -227,6 +257,9 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/alert-rules': typeof AuthenticatedAlertRulesRoute
+  '/alerting': typeof AuthenticatedAlertingRoute
+  '/overview': typeof AuthenticatedOverviewRoute
+  '/scan-templates': typeof AuthenticatedScanTemplatesRoute
   '/trends': typeof AuthenticatedTrendsRoute
   '/': typeof AuthenticatedIndexRoute
   '/admin/gvm-library': typeof AuthenticatedAdminGvmLibraryRoute
@@ -235,6 +268,7 @@ export interface FileRoutesByTo {
   '/admin/roles': typeof AuthenticatedAdminRolesRoute
   '/admin/severity-rules': typeof AuthenticatedAdminSeverityRulesRoute
   '/admin/ssh-alert-defaults': typeof AuthenticatedAdminSshAlertDefaultsRoute
+  '/admin/system': typeof AuthenticatedAdminSystemRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/alerts/$alertId': typeof AuthenticatedAlertsAlertIdRoute
   '/hosts/$hostId': typeof AuthenticatedHostsHostIdRoute
@@ -258,6 +292,9 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/login': typeof LoginRoute
   '/_authenticated/alert-rules': typeof AuthenticatedAlertRulesRoute
+  '/_authenticated/alerting': typeof AuthenticatedAlertingRoute
+  '/_authenticated/overview': typeof AuthenticatedOverviewRoute
+  '/_authenticated/scan-templates': typeof AuthenticatedScanTemplatesRoute
   '/_authenticated/trends': typeof AuthenticatedTrendsRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/admin/gvm-library': typeof AuthenticatedAdminGvmLibraryRoute
@@ -266,6 +303,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/roles': typeof AuthenticatedAdminRolesRoute
   '/_authenticated/admin/severity-rules': typeof AuthenticatedAdminSeverityRulesRoute
   '/_authenticated/admin/ssh-alert-defaults': typeof AuthenticatedAdminSshAlertDefaultsRoute
+  '/_authenticated/admin/system': typeof AuthenticatedAdminSystemRoute
   '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
   '/_authenticated/alerts/$alertId': typeof AuthenticatedAlertsAlertIdRoute
   '/_authenticated/hosts/$hostId': typeof AuthenticatedHostsHostIdRoute
@@ -290,6 +328,9 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/alert-rules'
+    | '/alerting'
+    | '/overview'
+    | '/scan-templates'
     | '/trends'
     | '/admin/gvm-library'
     | '/admin/hostname-lookup'
@@ -297,6 +338,7 @@ export interface FileRouteTypes {
     | '/admin/roles'
     | '/admin/severity-rules'
     | '/admin/ssh-alert-defaults'
+    | '/admin/system'
     | '/admin/users'
     | '/alerts/$alertId'
     | '/hosts/$hostId'
@@ -318,6 +360,9 @@ export interface FileRouteTypes {
   to:
     | '/login'
     | '/alert-rules'
+    | '/alerting'
+    | '/overview'
+    | '/scan-templates'
     | '/trends'
     | '/'
     | '/admin/gvm-library'
@@ -326,6 +371,7 @@ export interface FileRouteTypes {
     | '/admin/roles'
     | '/admin/severity-rules'
     | '/admin/ssh-alert-defaults'
+    | '/admin/system'
     | '/admin/users'
     | '/alerts/$alertId'
     | '/hosts/$hostId'
@@ -348,6 +394,9 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/login'
     | '/_authenticated/alert-rules'
+    | '/_authenticated/alerting'
+    | '/_authenticated/overview'
+    | '/_authenticated/scan-templates'
     | '/_authenticated/trends'
     | '/_authenticated/'
     | '/_authenticated/admin/gvm-library'
@@ -356,6 +405,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/roles'
     | '/_authenticated/admin/severity-rules'
     | '/_authenticated/admin/ssh-alert-defaults'
+    | '/_authenticated/admin/system'
     | '/_authenticated/admin/users'
     | '/_authenticated/alerts/$alertId'
     | '/_authenticated/hosts/$hostId'
@@ -408,6 +458,27 @@ declare module '@tanstack/react-router' {
       path: '/trends'
       fullPath: '/trends'
       preLoaderRoute: typeof AuthenticatedTrendsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/scan-templates': {
+      id: '/_authenticated/scan-templates'
+      path: '/scan-templates'
+      fullPath: '/scan-templates'
+      preLoaderRoute: typeof AuthenticatedScanTemplatesRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/overview': {
+      id: '/_authenticated/overview'
+      path: '/overview'
+      fullPath: '/overview'
+      preLoaderRoute: typeof AuthenticatedOverviewRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/alerting': {
+      id: '/_authenticated/alerting'
+      path: '/alerting'
+      fullPath: '/alerting'
+      preLoaderRoute: typeof AuthenticatedAlertingRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/alert-rules': {
@@ -522,6 +593,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminUsersRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/admin/system': {
+      id: '/_authenticated/admin/system'
+      path: '/admin/system'
+      fullPath: '/admin/system'
+      preLoaderRoute: typeof AuthenticatedAdminSystemRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/admin/ssh-alert-defaults': {
       id: '/_authenticated/admin/ssh-alert-defaults'
       path: '/admin/ssh-alert-defaults'
@@ -583,6 +661,9 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteChildren {
   AuthenticatedAlertRulesRoute: typeof AuthenticatedAlertRulesRoute
+  AuthenticatedAlertingRoute: typeof AuthenticatedAlertingRoute
+  AuthenticatedOverviewRoute: typeof AuthenticatedOverviewRoute
+  AuthenticatedScanTemplatesRoute: typeof AuthenticatedScanTemplatesRoute
   AuthenticatedTrendsRoute: typeof AuthenticatedTrendsRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
   AuthenticatedAdminGvmLibraryRoute: typeof AuthenticatedAdminGvmLibraryRoute
@@ -591,6 +672,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedAdminRolesRoute: typeof AuthenticatedAdminRolesRoute
   AuthenticatedAdminSeverityRulesRoute: typeof AuthenticatedAdminSeverityRulesRoute
   AuthenticatedAdminSshAlertDefaultsRoute: typeof AuthenticatedAdminSshAlertDefaultsRoute
+  AuthenticatedAdminSystemRoute: typeof AuthenticatedAdminSystemRoute
   AuthenticatedAdminUsersRoute: typeof AuthenticatedAdminUsersRoute
   AuthenticatedAlertsAlertIdRoute: typeof AuthenticatedAlertsAlertIdRoute
   AuthenticatedHostsHostIdRoute: typeof AuthenticatedHostsHostIdRoute
@@ -612,6 +694,9 @@ interface AuthenticatedRouteChildren {
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAlertRulesRoute: AuthenticatedAlertRulesRoute,
+  AuthenticatedAlertingRoute: AuthenticatedAlertingRoute,
+  AuthenticatedOverviewRoute: AuthenticatedOverviewRoute,
+  AuthenticatedScanTemplatesRoute: AuthenticatedScanTemplatesRoute,
   AuthenticatedTrendsRoute: AuthenticatedTrendsRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
   AuthenticatedAdminGvmLibraryRoute: AuthenticatedAdminGvmLibraryRoute,
@@ -621,6 +706,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAdminSeverityRulesRoute: AuthenticatedAdminSeverityRulesRoute,
   AuthenticatedAdminSshAlertDefaultsRoute:
     AuthenticatedAdminSshAlertDefaultsRoute,
+  AuthenticatedAdminSystemRoute: AuthenticatedAdminSystemRoute,
   AuthenticatedAdminUsersRoute: AuthenticatedAdminUsersRoute,
   AuthenticatedAlertsAlertIdRoute: AuthenticatedAlertsAlertIdRoute,
   AuthenticatedHostsHostIdRoute: AuthenticatedHostsHostIdRoute,

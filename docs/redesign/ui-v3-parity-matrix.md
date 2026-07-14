@@ -32,7 +32,7 @@ what must be checked before that cut-over is allowed.
 | 2FA setup, backup codes, and account security | User menu -> Account security | Change | 5 | End-to-end test for every role |
 | Dark theme and DESIGN.md tokens | All pages | Keep | 0 | Browser and visual review |
 | Collapsible sidebar | New app shell | Keep | 0 | Component test |
-| Quick Scan entry point | Location not yet defined | Open | 0/1 | Product decision and browser test |
+| Quick Scan entry point | Sidebar button kept (decided 2026-07-14, Phase 0) | Keep | 0 | Browser test |
 | Viewer, analyst, operator, and admin behavior | Permission-aware navigation and actions | Change | 0 | End-to-end test for every role |
 | Old bookmarks and shared URLs | Redirects to new destinations | Keep | 6 | Redirect tests including path parameters |
 | Loading, error, empty, and retry states | Shared state components | Change | All | Component tests and browser review |
