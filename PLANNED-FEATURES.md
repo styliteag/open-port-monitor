@@ -304,3 +304,11 @@ detection:
 - **File permissions** — world-writable /etc, SSH keys readable, sudoers writable
 - **Credential exposure** — plaintext git credentials, AWS keys, Docker config auth tokens
 - **Software versions** — outdated packages with known CVEs via file hash or version commands
+
+---
+
+## 37. UI v3 — Triage-First Redesign
+**As an** operator or manager, **I want** a rebuilt WebUI organized around alert triage (inbox with keyboard shortcuts, task-based navigation, network wizard, executive status page), **so that** daily work is fast and the tool stops feeling cluttered and hard to use.
+
+**Implementing:** yes
+**Current state:** Users report the UI as cluttered: 16 nav items in 4 groups, an 806-line network form, confusing dismiss/accept vocabulary, no dedicated triage flow, no management view. Full plan and decisions: [docs/redesign/ui-v3-plan.md](docs/redesign/ui-v3-plan.md), ADRs 0001–0007 in [docs/adr/](docs/adr/README.md), terminology in [docs/redesign/glossary.md](docs/redesign/glossary.md). Big-bang rewrite on branch `ui-v3`, beta on own instance, release as 3.0.0.
