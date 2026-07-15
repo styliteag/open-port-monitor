@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.4.0] - 2026-07-15
+
 ### Added
 
 - **Backend**: self-service password change endpoint `POST /api/auth/change-password` (`PasswordChangeRequest` with `current_password` + `new_password`, min length 8). Wrong current password returns 400; success bumps `token_version`, invalidating every session including the calling one — the client must sign in again. New `change_own_password` service in `services/users.py`; 4 tests in `test_change_password.py`. Previously only admins could set passwords via the user admin page — users had no way to change their own.
