@@ -101,11 +101,11 @@ existing trend must have an explicit destination or an explicit Drop decision.
 | Standalone `/trends` route | No standalone route | Drop | ADR 0007 |
 | 30-day alert/risk trend | Triage Dashboard | Change | Browser and data-contract tests |
 | Executive risk trend | Executive Overview | Change | API and browser tests |
-| Open-port trend | Destination not yet defined | Open | Product decision |
-| Host trend | Destination not yet defined | Open | Product decision |
-| Resolution-rate trend | Destination not yet defined | Open | Product decision |
-| 7/30/90-day range selection | Module filter or explicit removal | Open | Product decision |
-| Per-network trend filter | Module filter or explicit removal | Open | Product decision |
+| Open-port trend | Dropped with the `/trends` route | Drop | ADR 0007 (revisited before cut-over; no beta demand) |
+| Host trend | Dropped with the `/trends` route | Drop | ADR 0007 (revisited before cut-over; no beta demand) |
+| Resolution-rate trend | Dropped with the `/trends` route | Drop | ADR 0007 (revisited before cut-over; no beta demand) |
+| 7/30/90-day range selection | Dropped with the `/trends` route; surviving trend modules are fixed 30-day | Drop | ADR 0007 (revisited before cut-over; no beta demand) |
+| Per-network trend filter | Dropped with the `/trends` route | Drop | ADR 0007 (revisited before cut-over; no beta demand) |
 
 ## Hosts (inventoried 2026-07-14, Phase 3)
 
@@ -131,7 +131,7 @@ existing trend must have an explicit destination or an explicit Drop decision.
 | `/nse/profiles`, `/nse/library` (+ editor deep link), `/admin/gvm-library` | **Scan Templates** hub (`/scan-templates?tab=profiles|scripts|gvm`); page bodies extracted unchanged into feature components, old routes render the same components until cut-over | Change | Browser test of all three tabs |
 | `/alert-rules`, `/admin/severity-rules`, `/admin/ssh-alert-defaults` | **Alerting** hub (`/alerting?tab=rules|severity|ssh`); same extraction pattern | Change | Browser test of all three tabs |
 | `/scanners` list + detail | Unchanged | Keep | Browser test |
-| Rule-type wording ("Accepted") inside AlertRulesTable | Rename to Allow terminology in the Phase 6 polish sweep | Open | Terminology sweep |
+| Rule-type wording ("Accepted") inside AlertRulesTable | Renamed to Allow terminology ("Allowed" option) in the Phase 6 polish sweep | Change | Done (Phase 6): terminology sweep shipped in AlertRulesTable |
 
 ## Remaining route groups
 

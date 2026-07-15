@@ -134,3 +134,21 @@ Port Rules page was removed from top-level navigation and replaced by redirects 
 5. **NSE Scanner Page** — Dedicated UI page at `/nse` with profile grid/list view, search, severity/platform/type filters, View/Clone/Run actions. Run modal lets users select target network and optional target IP.
 6. **Profile Seeding** — 22 built-in profiles automatically seeded on first startup. Works out of the box without any configuration.
 7. **NSE Scripts** — 612 `.nse` scripts synced from upstream nmap in `nse-templates/` with manifest.json and auto-sync GitHub Actions workflow.
+
+---
+
+## 40. UI v3 — Triage-First Redesign
+**As an** operator or manager, **I want** a rebuilt WebUI organized around alert triage (inbox with keyboard shortcuts, task-based navigation, network wizard, executive status page), **so that** daily work is fast and the tool stops feeling cluttered and hard to use.
+
+(Planned as story 37 in PLANNED-FEATURES.md; renumbered to 40 on completion because this file already contains a different story 37.)
+
+**Implemented:** Big-bang rewrite on branch `ui-v3` (phases 0–6, each browser-verified), merged to `main` on 2026-07-15. Full decision record: [docs/redesign/ui-v3-plan.md](docs/redesign/ui-v3-plan.md), ADRs 0001–0007 in [docs/adr/](docs/adr/README.md), behavior-level parity in [docs/redesign/ui-v3-parity-matrix.md](docs/redesign/ui-v3-parity-matrix.md), terminology in [docs/redesign/glossary.md](docs/redesign/glossary.md).
+
+1. **Task-based navigation** — sidebar reduced to 3 role-filtered areas; 16-item/4-group v2 nav retired. All 10 retired v2 routes permanently redirect to their new homes (incl. `?tab=` targets).
+2. **Alerts Inbox** — split-view triage (list + detail panel) with `j`/`k`/`A`/`M`/`S` keyboard shortcuts, reduced filters (status/severity/network/source), bulk actions and CSV export; Open/Muted/Allowed queue states paginate server-side via the extended list API.
+3. **Triage Dashboard** — open-alert counts by severity/network plus compact 30-day trend module (absorbs part of the dropped Trends page, ADR 0007).
+4. **Network wizard + tab editor** — creation as Basics → Scan type → Schedule → Alerting wizard; editing via tabbed form. Replaces the monolithic 806-line NetworkForm.
+5. **Configuration hubs** — Scan Templates (`/scan-templates?tab=profiles|scripts|gvm`) and Alerting (`/alerting?tab=rules|severity|ssh`) consolidate six standalone pages; page bodies extracted into feature components.
+6. **Executive Overview** — new `GET /api/overview/executive` aggregate endpoint + `/overview` page with red/amber/green status, top 5 open risks, and 30-day handled counts.
+7. **Administration hubs** — Users & Roles (read-only Roles tab), System hub hosting the hostname cache; Account Security page unifies password change and 2FA.
+8. **Dropped with product approval** — standalone Trends page (ADR 0007) and the `/nse/results` cross-scan CVE search; scan/host detail render all NSE/GVM/nuclei findings instead.
