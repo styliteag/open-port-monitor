@@ -1,6 +1,5 @@
 """Tests for the RBAC permissions module."""
 
-import pytest
 
 from app.core.permissions import (
     ROLE_PERMISSIONS,

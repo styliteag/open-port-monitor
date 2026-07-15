@@ -10,12 +10,12 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 
 from app.core.security import create_access_token, hash_password
 from app.models import Base
-from app.routers import auth as auth_router
-from app.services import two_factor as two_factor_service
 from app.models.network import Network
 from app.models.scan import Scan, ScanStatus, TriggerType
 from app.models.scanner import Scanner
 from app.models.user import User, UserRole
+from app.routers import auth as auth_router
+from app.services import two_factor as two_factor_service
 
 # Test database URL - use SQLite for fast, isolated tests
 TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"

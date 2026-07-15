@@ -1,6 +1,5 @@
 """Tests for event emission at all alert mutation points."""
 
-from datetime import datetime, timezone
 
 import pytest
 from sqlalchemy import select
@@ -8,9 +7,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.alert import Alert, AlertType
 from app.models.alert_event import AlertEvent, AlertEventType
-from app.models.alert_rule import AlertRule, RuleType
 from app.models.network import Network
-from app.models.scan import Scan, ScanStatus, TriggerType
+from app.models.scan import Scan
 from app.models.user import User
 
 

@@ -20,7 +20,6 @@ from app.services.hostname_lookup import (
     upsert_cache_row,
 )
 
-
 # ── Service: get_hostname_cache_status ──────────────────────────────
 
 

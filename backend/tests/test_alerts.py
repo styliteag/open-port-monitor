@@ -11,10 +11,10 @@ from app.models.user import User
 from app.services.alerts import (
     dismiss_alert,
     dismiss_alerts,
-    get_dismiss_reason_suggestions,
     get_alert_with_network_name,
     get_alerts,
     get_alerts_by_ids,
+    get_dismiss_reason_suggestions,
     reopen_alert,
 )
 

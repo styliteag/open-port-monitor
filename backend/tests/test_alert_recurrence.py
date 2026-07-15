@@ -85,7 +85,7 @@ class TestRecurrenceDetection:
         db_session.add(op)
         await db_session.commit()
 
-        count = await generate_alerts_for_scan(db_session, second_scan)
+        await generate_alerts_for_scan(db_session, second_scan)
 
         await db_session.refresh(dismissed_alert)
         assert dismissed_alert.dismissed is False
